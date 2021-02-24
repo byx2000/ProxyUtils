@@ -48,12 +48,15 @@ public static <T> T implement(Class<T> type, MethodInterceptor interceptor);
 
 ## MethodInterceptor接口
 
-该接口用于定义如何拦截目标方法（被增强的方法）。
+该接口用于封装方法的拦截过程。
 
 ### 定义
 
 ```java
-Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params);
+public interface MethodInterceptor
+{
+    Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params);
+}
 ```
 
 ### 说明

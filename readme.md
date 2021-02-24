@@ -88,7 +88,6 @@ public class UserDaoImpl implements UserDao
 ### 主函数
 
 ```java
-// 定义方法拦截器
 public static void main(String[] args)
 {
     // 定义方法拦截器
