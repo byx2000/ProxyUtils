@@ -1,84 +1,139 @@
 package byx.aop.test;
 
+import byx.aop.core.Invokable;
 import byx.aop.core.MethodInterceptor;
-import byx.aop.core.MethodMatcher;
+import byx.aop.core.MethodSignature;
 import byx.aop.exception.TargetMethodException;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.annotation.*;
 
-import static byx.aop.AOP.proxy;
-import static byx.aop.core.MethodMatcher.withPattern;
+import static byx.aop.AOP.*;
+import static byx.aop.core.MethodMatcher.*;
 
 /**
- * 统一事务增强
+ * 声明式事务管理
  */
 public class Example1
 {
-    public static class User {}
-
-    public interface UserDao
+    // 模拟JDBC的Connection
+    public static class Connection
     {
-        List<User> listAll();
-        void delete(int id);
-        void insert(User user);
+        public void setAutoCommit(boolean flag)
+        {
+            System.out.println("setAutoCommit(" + flag + ")");
+        }
+
+        public void commit()
+        {
+            System.out.println("提交事务");
+        }
+
+        public void rollback()
+        {
+            System.out.println("回滚事务");
+        }
+
+        public void close()
+        {
+            System.out.println("关闭连接");
+        }
+
+        public void execute(String sql)
+        {
+            System.out.println("执行sql语句：" + sql);
+        }
     }
 
-    public static class UserDaoImpl implements UserDao
+    // 模拟JDBC的DataSource
+    public static class DataSource
+    {
+        public Connection getConnection()
+        {
+            System.out.println("获取连接");
+            return new Connection();
+        }
+    }
+
+    // 声明事务管理的注解
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Inherited
+    public @interface Transactional
+    {}
+
+    // 模拟连接池
+    private final Connection[] connectionPool = new Connection[1];
+
+    // User服务接口
+    public interface UserService
+    {
+        void insert();
+        void delete();
+    }
+
+    // User服务实现类
+    public class UserServiceImpl implements UserService
     {
         @Override
-        public List<User> listAll()
+        @Transactional
+        public void insert()
         {
-            System.out.println("正在执行listAll方法");
-            return new ArrayList<>();
+            connectionPool[0].execute("INSERT INTO ...");
         }
 
         @Override
-        public void delete(int id)
+        @Transactional
+        public void delete()
         {
-            System.out.println("正在执行delete方法");
+            connectionPool[0].execute("DELETE FROM ...");
+            throw new RuntimeException("删除时抛出的异常");
+        }
+    }
+
+    // 事务管理器
+    public class TransactionManager implements MethodInterceptor
+    {
+        private final DataSource dataSource;
+
+        public TransactionManager(DataSource dataSource)
+        {
+            this.dataSource = dataSource;
         }
 
         @Override
-        public void insert(User user)
+        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params)
         {
-            System.out.println("正在执行insert方法");
-            throw new RuntimeException();
+            try
+            {
+                connectionPool[0] = dataSource.getConnection();
+                connectionPool[0].setAutoCommit(false);
+                Object ret = targetMethod.invoke(params);
+                connectionPool[0].commit();
+                return ret;
+            }
+            catch (TargetMethodException e)
+            {
+                System.out.println("发生异常：" + e.getMessage());
+                connectionPool[0].rollback();
+                return null;
+            }
+            finally
+            {
+                connectionPool[0].close();
+            }
         }
     }
 
     @Test
     public void test()
     {
-        // 事务增强拦截器
-        MethodInterceptor transactionEnhance = (signature, targetMethod, params) ->
-        {
-            System.out.println("开启事务");
-            try
-            {
-                Object ret = targetMethod.invoke(params);
-                System.out.println("提交事务");
-                return ret;
-            }
-            catch (TargetMethodException e)
-            {
-                System.out.println("发生异常");
-                System.out.println("回滚事务");
-                return null;
-            }
-        };
+        UserService userService = proxy(
+                new UserServiceImpl(),
+                new TransactionManager(new DataSource()).when(hasAnnotation(Transactional.class)));
 
-        // 配匹所有不以list开头的方法
-        MethodMatcher updateMethods = withPattern("list(.*)").not();
-
-        // 创建事务增强的UserDaoImpl
-        UserDao userDao = proxy(new UserDaoImpl(), transactionEnhance.when(updateMethods));
-
-        userDao.listAll();
+        userService.insert();
         System.out.println();
-        userDao.delete(1001);
-        System.out.println();
-        userDao.insert(new User());
+        userService.delete();
     }
 }
