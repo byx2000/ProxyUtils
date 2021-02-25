@@ -34,6 +34,10 @@ ByxAOP是一个基于JDK动态代理和Cglib动态代理的简易AOP框架，具
     </dependencies>
     ```
 
+## API文档
+
+[API文档](http://byx2000.gitee.io/javadoc/ByxAOP-1.0.0-javadoc/)
+
 ## 使用前准备
 
 在使用ByxAOP前，建议先在源文件中静态导入下列包：
@@ -135,10 +139,6 @@ public static void main(String[] args)
 ```
 
 从输出结果可以看到，`UserDaoImpl`中的`listAll`方法和`listById`方法都被增强了，而`deleteByName`方法没有被增强。
-
-## API文档
-
-[API文档](./doc/API.md)
 
 ## 更多使用示例
 
