@@ -10,6 +10,9 @@ import java.lang.annotation.*;
 import static byx.aop.AOP.proxy;
 import static byx.aop.core.MethodMatcher.hasAnnotation;
 
+/**
+ * 参数校验
+ */
 public class Example5
 {
     @Retention(RetentionPolicy.RUNTIME)
@@ -26,45 +29,94 @@ public class Example5
 
     public interface Service
     {
-        void login(String username, String password);
+        String login(String username, String password);
     }
 
     public static class ServiceImpl implements Service
     {
         @Validate
-        public void login(@NotNull  String username, @NotNull String password)
+        public String login(@NotNull  String username, @NotNull String password)
         {
             System.out.println("正在登录：" + username + " " + password);
+            return username + " " + password;
         }
     }
 
-    @Test
-    public void test()
+    public static class User
     {
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
+        private String username;
+        private String password;
+
+        public String getUsername()
         {
-            Annotation[][] parameterAnnotations = signature.getParameterAnnotations();
-            for (int i = 0; i < parameterAnnotations.length; ++i)
+            return username;
+        }
+
+        @Validate
+        public void setUsername(@NotNull String username)
+        {
+            System.out.println("username = " + username);
+            this.username = username;
+        }
+
+        public String getPassword()
+        {
+            return password;
+        }
+
+        @Validate
+        public void setPassword(@NotNull String password)
+        {
+            System.out.println("password = " + password);
+            this.password = password;
+        }
+    }
+
+    // 方法拦截器
+    private final MethodInterceptor interceptor = (signature, targetMethod, params) ->
+    {
+        Annotation[][] parameterAnnotations = signature.getParameterAnnotations();
+        for (int i = 0; i < parameterAnnotations.length; ++i)
+        {
+            for (Annotation annotation : parameterAnnotations[i])
             {
-                for (Annotation annotation : parameterAnnotations[i])
+                if (annotation instanceof NotNull)
                 {
-                    if (annotation instanceof NotNull)
-                    {
-                        if (params[i] == null)
-                            throw new RuntimeException("第" + (i + 1) + "个参数为null");
-                    }
+                    if (params[i] == null)
+                        throw new RuntimeException("第" + (i + 1) + "个参数为null");
                 }
             }
-            return targetMethod.invoke(params);
-        };
+        }
+        return targetMethod.invoke(params);
+    };
 
-        MethodMatcher matcher = hasAnnotation(Validate.class);
+    // 方法匹配器
+    private final MethodMatcher matcher = hasAnnotation(Validate.class);
 
+    @Test
+    public void test1()
+    {
         Service service = proxy(new ServiceImpl(), interceptor.when(matcher));
 
-        service.login("admin", "123456");
+        assertEquals("admin 123456", service.login("admin", "123456"));
         assertThrows(RuntimeException.class, () -> service.login(null, "123456"));
         assertThrows(RuntimeException.class, () -> service.login("admin", null));
         assertThrows(RuntimeException.class, () -> service.login(null, null));
+    }
+
+    @Test
+    public void test2()
+    {
+        User user = proxy(new User(), interceptor.when(matcher));
+
+        user.setUsername("XiaoMing");
+        assertEquals("XiaoMing", user.getUsername());
+        assertThrows(RuntimeException.class, () -> user.setUsername(null));
+        assertEquals("XiaoMing", user.getUsername());
+
+        user.setPassword("123456");
+        assertEquals("123456", user.getPassword());
+        assertThrows(RuntimeException.class, () -> user.setPassword(null));
+        assertEquals("123456", user.getPassword());
     }
 }

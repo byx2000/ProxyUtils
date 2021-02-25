@@ -37,17 +37,33 @@ public class AOP
     }
 
     /**
-     * 实现接口
-     * @param type 接口类型
+     * 动态实现接口
+     * @param interfaceType 接口类型
      * @param interceptor 方法拦截器
      * @param <T> 返回类型
      * @return 动态生成的接口实现类
      */
-    public static <T> T implement(Class<T> type, MethodInterceptor interceptor)
+    public static <T> T implement(Class<T> interfaceType, MethodInterceptor interceptor)
     {
-        return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
-                new Class<?>[]{type},
+        return interfaceType.cast(Proxy.newProxyInstance(interfaceType.getClassLoader(),
+                new Class<?>[]{interfaceType},
                 (proxy, method, args) -> interceptor.intercept(MethodSignature.of(method), Invokable.of(method, null), args)));
+    }
+
+    /**
+     * 动态生成子类
+     * @param parentType 父类
+     * @param interceptor 方法拦截器
+     * @param <T> 返回类型
+     * @return 动态生成的子类
+     */
+    public static <T> T extend(Class<T> parentType, MethodInterceptor interceptor)
+    {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(parentType);
+        enhancer.setCallback((InvocationHandler) (proxy, method, args) ->
+                interceptor.intercept(MethodSignature.of(method), Invokable.of(method, null), args));
+        return parentType.cast(enhancer.create());
     }
 
     /**
