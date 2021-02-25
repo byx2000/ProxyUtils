@@ -25,6 +25,9 @@ public static <T> T proxy(Object target, MethodInterceptor interceptor);
 
 对于`target`中的每个方法，都会被`interceptor`拦截。
 
+* 当目标对象没有实现任何接口时，使用Cglib动态代理
+* 其他情况则使用JDK动态代理
+
 ### implement方法
 
 该方法用于动态实现接口。
@@ -32,19 +35,40 @@ public static <T> T proxy(Object target, MethodInterceptor interceptor);
 #### 方法签名
 
 ```java
-public static <T> T implement(Class<T> type, MethodInterceptor interceptor);
+public static <T> T implement(Class<T> interfaceType, MethodInterceptor interceptor);
 ```
 
 #### 参数
 
 |参数|说明|
 |---|---|
-|`type`|接口类型|
+|`interfaceType`|接口类型|
 |`interceptor`|方法拦截器|
 
 #### 行为
 
-对于`type`接口中的每个方法，都会被`interceptor`拦截。
+对于`interfaceType`接口中的每个方法，都会被`interceptor`拦截。
+
+### extend方法
+
+该方法用于动态创建子类
+
+#### 方法签名
+
+```java
+public static <T> T extend(Class<T> parentType, MethodInterceptor interceptor);
+```
+
+#### 参数
+
+|参数|说明|
+|---|---|
+|`parentType`|父类|
+|`interceptor`|方法拦截器|
+
+#### 行为
+
+对于`parentType`中的每个方法，都会被`interceptor`拦截。
 
 ## MethodInterceptor接口
 
