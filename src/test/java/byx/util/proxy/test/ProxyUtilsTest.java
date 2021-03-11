@@ -1,31 +1,26 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.core.Invokable;
-import byx.aop.core.MethodInterceptor;
-import byx.aop.core.MethodMatcher;
-import byx.aop.core.MethodSignature;
+import byx.util.proxy.core.Invokable;
+import byx.util.proxy.core.MethodInterceptor;
+import byx.util.proxy.core.MethodMatcher;
+import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static byx.aop.AOP.proxy;
-import static byx.aop.core.MethodMatcher.*;
+import static byx.util.proxy.ProxyUtils.proxy;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ByxAOPTest
-{
-    public static class MyInterceptor implements MethodInterceptor
-    {
+public class ProxyUtilsTest {
+    public static class MyInterceptor implements MethodInterceptor {
         private final String name;
 
-        public MyInterceptor(String name)
-        {
+        public MyInterceptor(String name) {
             this.name = name;
         }
 
         @Override
-        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params)
-        {
+        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params) {
             System.out.println(name + ": 开始拦截" + signature.getName() + "方法");
             System.out.println(name + ": 原始参数：" + Arrays.toString(params));
             Object ret = targetMethod.invoke(params[0] + " " + name);
@@ -41,9 +36,8 @@ public class ByxAOPTest
     private final MyInterceptor interceptor4 = new MyInterceptor("interceptor4");
 
     @Test
-    public void test1()
-    {
-        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(withParameterTypes(String.class)));
+    public void test1() {
+        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(MethodMatcher.withParameterTypes(String.class)));
 
         userDao.checkListAllParameter(s -> assertEquals("listAll的参数 interceptor1", s));
         userDao.checkListByIdParameter(s -> assertEquals("listById的参数 interceptor1", s));
@@ -57,9 +51,8 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test2()
-    {
-        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(withName("listAll")));
+    public void test2() {
+        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(MethodMatcher.withName("listAll")));
 
         userDao.checkListAllParameter(s -> assertEquals("listAll的参数 interceptor1", s));
         userDao.checkListByIdParameter(s -> assertEquals("listById的参数", s));
@@ -73,9 +66,8 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test3()
-    {
-        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(withName("listAll").or(withName("insert"))));
+    public void test3() {
+        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(MethodMatcher.withName("listAll").or(MethodMatcher.withName("insert"))));
 
         userDao.checkListAllParameter(s -> assertEquals("listAll的参数 interceptor1", s));
         userDao.checkListByIdParameter(s -> assertEquals("listById的参数", s));
@@ -89,9 +81,8 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test4()
-    {
-        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.then(interceptor2).when(withParameterTypes(String.class)));
+    public void test4() {
+        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.then(interceptor2).when(MethodMatcher.withParameterTypes(String.class)));
 
         userDao.checkListAllParameter(s -> assertEquals("listAll的参数 interceptor2 interceptor1", s));
         userDao.checkListByIdParameter(s -> assertEquals("listById的参数 interceptor2 interceptor1", s));
@@ -105,9 +96,8 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test5()
-    {
-        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(withName("listById")).then(interceptor2.when(withName("delete"))));
+    public void test5() {
+        UserDao userDao = proxy(new UserDaoImpl(), interceptor1.when(MethodMatcher.withName("listById")).then(interceptor2.when(MethodMatcher.withName("delete"))));
 
         userDao.checkListAllParameter(s -> assertEquals("listAll的参数", s));
         userDao.checkListByIdParameter(s -> assertEquals("listById的参数 interceptor1", s));
@@ -121,11 +111,9 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test6()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test6() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -134,7 +122,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withName("f1").andParameterTypes(int.class, String.class).andReturnType(void.class);
+        MethodMatcher matcher = MethodMatcher.withName("f1").andParameterTypes(int.class, String.class).andReturnType(void.class);
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f1(100, "hello");
@@ -143,11 +131,9 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test7()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test7() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -156,7 +142,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withReturnType(void.class).andName("f2").andParameterTypes();
+        MethodMatcher matcher = MethodMatcher.withReturnType(void.class).andName("f2").andParameterTypes();
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f2("hello");
@@ -169,11 +155,9 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test8()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test8() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -182,7 +166,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withParameterTypes(int.class, String.class).andReturnType(String.class).andName("f3");
+        MethodMatcher matcher = MethodMatcher.withParameterTypes(int.class, String.class).andReturnType(String.class).andName("f3");
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f3("hello");
@@ -193,12 +177,11 @@ public class ByxAOPTest
         assertTrue(flags[0]);
         assertTrue(flags[1]);
     }
+
     @Test
-    public void test9()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test9() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -206,7 +189,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withName("f2");
+        MethodMatcher matcher = MethodMatcher.withName("f2");
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f2();
@@ -227,11 +210,9 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test10()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test10() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -239,7 +220,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withPattern("(f1)|(f4)");
+        MethodMatcher matcher = MethodMatcher.withPattern("(f1)|(f4)");
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f1(123, "hello");
@@ -260,11 +241,9 @@ public class ByxAOPTest
     }
 
     @Test
-    public void test11()
-    {
-        final boolean[] flags = { false, false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void test11() {
+        final boolean[] flags = {false, false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -272,7 +251,7 @@ public class ByxAOPTest
             flags[1] = true;
             return ret;
         };
-        MethodMatcher matcher = withReturnType(String.class).andPattern("f.");
+        MethodMatcher matcher = MethodMatcher.withReturnType(String.class).andPattern("f.");
         MyClass myClass = proxy(new MyClassImpl(), interceptor.when(matcher));
 
         myClass.f3(123, "hello");

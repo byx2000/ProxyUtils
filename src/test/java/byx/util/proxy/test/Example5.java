@@ -1,89 +1,77 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.core.MethodInterceptor;
-import byx.aop.core.MethodMatcher;
+import byx.util.proxy.core.MethodInterceptor;
+import byx.util.proxy.core.MethodMatcher;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.annotation.*;
 
-import static byx.aop.AOP.proxy;
-import static byx.aop.core.MethodMatcher.hasAnnotation;
+import static byx.util.proxy.ProxyUtils.proxy;
 
 /**
  * 参数校验
  */
-public class Example5
-{
+public class Example5 {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     @Inherited
-    public @interface Validate
-    {}
+    public @interface Validate {
+    }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.PARAMETER)
     @Inherited
-    public @interface NotNull
-    {}
+    public @interface NotNull {
+    }
 
-    public interface Service
-    {
+    public interface Service {
         String login(String username, String password);
     }
 
-    public static class ServiceImpl implements Service
-    {
+    public static class ServiceImpl implements Service {
         @Validate
-        public String login(@NotNull  String username, @NotNull String password)
-        {
+        public String login(@NotNull String username, @NotNull String password) {
             System.out.println("正在登录：" + username + " " + password);
             return username + " " + password;
         }
     }
 
-    public static class User
-    {
+    public static class User {
         private String username;
         private String password;
 
-        public String getUsername()
-        {
+        public String getUsername() {
             return username;
         }
 
         @Validate
-        public void setUsername(@NotNull String username)
-        {
+        public void setUsername(@NotNull String username) {
             System.out.println("username = " + username);
             this.username = username;
         }
 
-        public String getPassword()
-        {
+        public String getPassword() {
             return password;
         }
 
         @Validate
-        public void setPassword(@NotNull String password)
-        {
+        public void setPassword(@NotNull String password) {
             System.out.println("password = " + password);
             this.password = password;
         }
     }
 
     // 方法拦截器
-    private final MethodInterceptor interceptor = (signature, targetMethod, params) ->
-    {
+    private final MethodInterceptor interceptor = (signature, targetMethod, params) -> {
         Annotation[][] parameterAnnotations = signature.getParameterAnnotations();
-        for (int i = 0; i < parameterAnnotations.length; ++i)
-        {
-            for (Annotation annotation : parameterAnnotations[i])
-            {
-                if (annotation instanceof NotNull)
-                {
-                    if (params[i] == null)
+        for (int i = 0; i < parameterAnnotations.length; ++i) {
+            for (Annotation annotation : parameterAnnotations[i]) {
+                if (annotation instanceof NotNull) {
+                    if (params[i] == null) {
                         throw new RuntimeException("第" + (i + 1) + "个参数为null");
+                    }
                 }
             }
         }
@@ -91,11 +79,10 @@ public class Example5
     };
 
     // 方法匹配器
-    private final MethodMatcher matcher = hasAnnotation(Validate.class);
+    private final MethodMatcher matcher = MethodMatcher.hasAnnotation(Validate.class);
 
     @Test
-    public void test1()
-    {
+    public void test1() {
         Service service = proxy(new ServiceImpl(), interceptor.when(matcher));
 
         assertEquals("admin 123456", service.login("admin", "123456"));
@@ -105,8 +92,7 @@ public class Example5
     }
 
     @Test
-    public void test2()
-    {
+    public void test2() {
         User user = proxy(new User(), interceptor.when(matcher));
 
         user.setUsername("XiaoMing");

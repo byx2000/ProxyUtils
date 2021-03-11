@@ -43,9 +43,9 @@ ByxAOP是一个基于JDK动态代理和Cglib动态代理的简易AOP框架，具
 在使用ByxAOP前，建议先在源文件中静态导入下列包：
 
 ```java
-import static byx.aop.AOP.*;
-import static byx.aop.core.MethodInterceptor.*;
-import static byx.aop.core.MethodMatcher.*;
+import static byx.util.proxy.ProxyUtils.*;
+import static byx.util.proxy.core.MethodInterceptor.*;
+import static byx.util.proxy.core.MethodMatcher.*;
 ```
 
 ## 使用示例

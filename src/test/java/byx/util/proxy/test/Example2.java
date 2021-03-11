@@ -1,36 +1,33 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.exception.NotImplementedException;
+import byx.util.proxy.exception.NotImplementedException;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-import static byx.aop.AOP.*;
-import static byx.aop.core.MethodInterceptor.*;
+import static byx.util.proxy.ProxyUtils.*;
+import static byx.util.proxy.core.MethodInterceptor.*;
 
 /**
  * 动态实现接口
  */
-public class Example2
-{
-    public interface Calculator
-    {
+public class Example2 {
+    public interface Calculator {
         int add(int a, int b);
+
         int sub(int a, int b);
+
         int mul(int a, int b);
     }
 
     @Test
-    public void test()
-    {
-        Calculator calculator = implement(Calculator.class, delegateTo(new Object()
-        {
-            public int add(int a, int b)
-            {
+    public void test() {
+        Calculator calculator = implement(Calculator.class, delegateTo(new Object() {
+            public int add(int a, int b) {
                 return a + b;
             }
 
-            public int sub(int a, int b)
-            {
+            public int sub(int a, int b) {
                 return a - b;
             }
         }));

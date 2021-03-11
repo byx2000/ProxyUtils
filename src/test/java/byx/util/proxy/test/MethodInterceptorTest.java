@@ -1,57 +1,53 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.core.*;
-import byx.aop.exception.TargetMethodException;
+import byx.util.proxy.core.MethodInterceptor;
+import byx.util.proxy.core.MethodMatcher;
+import byx.util.proxy.core.ParametersInterceptor;
+import byx.util.proxy.core.ReturnValueInterceptor;
+import byx.util.proxy.exception.TargetMethodException;
 import org.junit.jupiter.api.Test;
+
+import static byx.util.proxy.ProxyUtils.proxy;
+import static byx.util.proxy.core.MethodInterceptor.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import static byx.aop.AOP.*;
-import static byx.aop.core.MethodInterceptor.*;
-import static byx.aop.core.MethodMatcher.*;
-
-public class MethodInterceptorTest
-{
-    public interface A
-    {
+public class MethodInterceptorTest {
+    public interface A {
         void f1();
+
         void f2(int i, String s);
+
         int f2();
+
         String f3(int i, String s);
     }
 
-    public static class AImpl implements A
-    {
+    public static class AImpl implements A {
         @Override
-        public void f1()
-        {
+        public void f1() {
 
         }
 
         @Override
-        public void f2(int i, String s)
-        {
+        public void f2(int i, String s) {
 
         }
 
         @Override
-        public int f2()
-        {
+        public int f2() {
             return 123;
         }
 
         @Override
-        public String f3(int i, String s)
-        {
+        public String f3(int i, String s) {
             return s + " " + i;
         }
     }
 
     @Test
-    public void testInterceptor()
-    {
-        boolean[] flag = new boolean[]{ false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void testInterceptor() {
+        boolean[] flag = new boolean[]{false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flag[0] = true;
             return targetMethod.invoke(params);
         };
@@ -74,15 +70,13 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testWhen()
-    {
-        boolean[] flag = new boolean[]{ false };
-        MethodInterceptor interceptor = (signature, targetMethod, params) ->
-        {
+    public void testWhen() {
+        boolean[] flag = new boolean[]{false};
+        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
             flag[0] = true;
             return targetMethod.invoke(params);
         };
-        MethodMatcher matcher = withName("f2");
+        MethodMatcher matcher = MethodMatcher.withName("f2");
         A a = proxy(new AImpl(), interceptor.when(matcher));
 
         a.f1();
@@ -100,18 +94,15 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testThen()
-    {
-        String[] s = new String[]{ "" };
-        MethodInterceptor interceptor1 = (signature, targetMethod, params) ->
-        {
+    public void testThen() {
+        String[] s = new String[]{""};
+        MethodInterceptor interceptor1 = (signature, targetMethod, params) -> {
             s[0] += "1b";
             Object ret = targetMethod.invoke(params);
             s[0] += "1e";
             return ret;
         };
-        MethodInterceptor interceptor2 = (signature, targetMethod, params) ->
-        {
+        MethodInterceptor interceptor2 = (signature, targetMethod, params) -> {
             s[0] += "2b";
             Object ret = targetMethod.invoke(params);
             s[0] += "2e";
@@ -124,21 +115,18 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testWhenAndThen()
-    {
-        String[] s = new String[]{ "", "" };
-        MethodInterceptor interceptor1 = (signature, targetMethod, params) ->
-        {
+    public void testWhenAndThen() {
+        String[] s = new String[]{"", ""};
+        MethodInterceptor interceptor1 = (signature, targetMethod, params) -> {
             s[0] += "a";
             return targetMethod.invoke(params);
         };
-        MethodMatcher matcher1 = withName("f1");
-        MethodInterceptor interceptor2 = (signature, targetMethod, params) ->
-        {
+        MethodMatcher matcher1 = MethodMatcher.withName("f1");
+        MethodInterceptor interceptor2 = (signature, targetMethod, params) -> {
             s[1] += "b";
             return targetMethod.invoke(params);
         };
-        MethodMatcher matcher2 = withName("f3");
+        MethodMatcher matcher2 = MethodMatcher.withName("f3");
         A a = proxy(new AImpl(), interceptor1.when(matcher1).then(interceptor2.when(matcher2)));
 
         a.f2();
@@ -159,20 +147,18 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testInterceptParameters()
-    {
-        boolean[] flag = new boolean[]{ false };
-        ParametersInterceptor interceptor = (signature, params) ->
-        {
+    public void testInterceptParameters() {
+        boolean[] flag = new boolean[]{false};
+        ParametersInterceptor interceptor = (signature, params) -> {
             flag[0] = true;
             assertEquals(params.length, 2);
             assertTrue(params[0] instanceof Integer);
             assertTrue(params[1] instanceof String);
             assertEquals(123, params[0]);
             assertEquals("hi", params[1]);
-            return new Object[]{ 456, "abc" };
+            return new Object[]{456, "abc"};
         };
-        A a = proxy(new AImpl(), interceptParameters(interceptor).when(withName("f3")));
+        A a = proxy(new AImpl(), interceptParameters(interceptor).when(MethodMatcher.withName("f3")));
 
         String ret = a.f3(123, "hi");
         assertTrue(flag[0]);
@@ -180,17 +166,15 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testInterceptReturnValue()
-    {
-        boolean[] flag = new boolean[]{ false };
-        ReturnValueInterceptor interceptor = (signature, returnValue) ->
-        {
+    public void testInterceptReturnValue() {
+        boolean[] flag = new boolean[]{false};
+        ReturnValueInterceptor interceptor = (signature, returnValue) -> {
             flag[0] = true;
             assertTrue(returnValue instanceof Integer);
             assertEquals(123, returnValue);
             return 456;
         };
-        A a = proxy(new AImpl(), interceptReturnValue(interceptor).when(withName("f2").andReturnType(int.class)));
+        A a = proxy(new AImpl(), interceptReturnValue(interceptor).when(MethodMatcher.withName("f2").andReturnType(int.class)));
 
         int ret = a.f2();
         assertTrue(flag[0]);
@@ -198,17 +182,13 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testDelegateToProxy()
-    {
-        CharSequence s = proxy("hello", delegateTo(new Object()
-        {
-            public int length()
-            {
+    public void testDelegateToProxy() {
+        CharSequence s = proxy("hello", delegateTo(new Object() {
+            public int length() {
                 return 123;
             }
 
-            public String toString()
-            {
+            public String toString() {
                 return "hi";
             }
         }));
@@ -219,17 +199,13 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testException1()
-    {
-        A a = proxy(new AImpl(), delegateTo(new Object()
-        {
-            public void f1() throws Exception
-            {
+    public void testException1() {
+        A a = proxy(new AImpl(), delegateTo(new Object() {
+            public void f1() throws Exception {
                 throw new Exception("故意抛出的Exception");
             }
 
-            public String f3(int i, String s)
-            {
+            public String f3(int i, String s) {
                 throw new RuntimeException("故意抛出的RuntimeException");
             }
         }));
@@ -239,17 +215,13 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testException2()
-    {
-        CharSequence s = proxy("hello", delegateTo(new Object()
-        {
-            public int length() throws Exception
-            {
+    public void testException2() {
+        CharSequence s = proxy("hello", delegateTo(new Object() {
+            public int length() throws Exception {
                 throw new Exception("故意抛出的Exception");
             }
 
-            public String toString()
-            {
+            public String toString() {
                 throw new RuntimeException("故意抛出的RuntimeException");
             }
         }));
@@ -259,31 +231,25 @@ public class MethodInterceptorTest
     }
 
     @Test
-    public void testException3()
-    {
-        A a1 = new A()
-        {
+    public void testException3() {
+        A a1 = new A() {
             @Override
-            public void f1()
-            {
+            public void f1() {
 
             }
 
             @Override
-            public void f2(int i, String s)
-            {
+            public void f2(int i, String s) {
                 throw new RuntimeException("故意抛出的RuntimeException");
             }
 
             @Override
-            public int f2()
-            {
+            public int f2() {
                 return 0;
             }
 
             @Override
-            public String f3(int i, String s)
-            {
+            public String f3(int i, String s) {
                 return null;
             }
         };

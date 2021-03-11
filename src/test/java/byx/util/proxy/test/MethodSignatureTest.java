@@ -1,40 +1,34 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.core.MethodSignature;
+import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MethodSignatureTest
-{
+public class MethodSignatureTest {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public @interface AnnotationOnMethod
-    {
+    public @interface AnnotationOnMethod {
         String value();
     }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.PARAMETER)
-    public @interface AnnotationOnParam
-    {
+    public @interface AnnotationOnParam {
         int value();
     }
 
-    public static class A
-    {
+    public static class A {
         @AnnotationOnMethod("hello")
-        public boolean fun(int i, @AnnotationOnParam(123) Double d, String s)
-        {
+        public boolean fun(int i, @AnnotationOnParam(123) Double d, String s) {
             return false;
         }
     }
 
     @Test
-    public void test() throws NoSuchMethodException
-    {
+    public void test() throws NoSuchMethodException {
         MethodSignature signature = MethodSignature.of(A.class.getMethod("fun", int.class, Double.class, String.class));
 
         assertEquals("fun", signature.getName());

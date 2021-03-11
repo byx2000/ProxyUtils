@@ -1,4 +1,4 @@
-package byx.aop.core;
+package byx.util.proxy.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -7,8 +7,7 @@ import java.lang.reflect.Modifier;
 /**
  * 方法签名
  */
-public interface MethodSignature
-{
+public interface MethodSignature {
     /**
      * 获取方法名
      */
@@ -62,67 +61,55 @@ public interface MethodSignature
     /**
      * 创建MethodSignature
      */
-    static MethodSignature of(Method method)
-    {
-        return new MethodSignature()
-        {
+    static MethodSignature of(Method method) {
+        return new MethodSignature() {
             @Override
-            public String getName()
-            {
+            public String getName() {
                 return method.getName();
             }
 
             @Override
-            public Class<?> getReturnType()
-            {
+            public Class<?> getReturnType() {
                 return method.getReturnType();
             }
 
             @Override
-            public Class<?>[] getParameterTypes()
-            {
+            public Class<?>[] getParameterTypes() {
                 return method.getParameterTypes();
             }
 
             @Override
-            public <T extends Annotation> T getAnnotation(Class<T> annotationClass)
-            {
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                 return method.getAnnotation(annotationClass);
             }
 
             @Override
-            public Annotation[] getAnnotations()
-            {
+            public Annotation[] getAnnotations() {
                 return method.getAnnotations();
             }
 
             @Override
-            public <T extends Annotation> boolean hasAnnotation(Class<T> annotationClass)
-            {
+            public <T extends Annotation> boolean hasAnnotation(Class<T> annotationClass) {
                 return method.isAnnotationPresent(annotationClass);
             }
 
             @Override
-            public Annotation[][] getParameterAnnotations()
-            {
+            public Annotation[][] getParameterAnnotations() {
                 return method.getParameterAnnotations();
             }
 
             @Override
-            public boolean isPublic()
-            {
+            public boolean isPublic() {
                 return Modifier.isPublic(method.getModifiers());
             }
 
             @Override
-            public boolean isPrivate()
-            {
+            public boolean isPrivate() {
                 return Modifier.isPrivate(method.getModifiers());
             }
 
             @Override
-            public boolean isProtected()
-            {
+            public boolean isProtected() {
                 return Modifier.isProtected(method.getModifiers());
             }
         };

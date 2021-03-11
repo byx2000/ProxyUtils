@@ -1,55 +1,46 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.core.Invokable;
-import byx.aop.core.MethodInterceptor;
-import byx.aop.core.MethodSignature;
-import byx.aop.exception.TargetMethodException;
+import byx.util.proxy.core.Invokable;
+import byx.util.proxy.core.MethodInterceptor;
+import byx.util.proxy.core.MethodSignature;
+import byx.util.proxy.exception.TargetMethodException;
+import byx.util.proxy.core.MethodMatcher;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
 
-import static byx.aop.AOP.*;
-import static byx.aop.core.MethodMatcher.*;
+import static byx.util.proxy.ProxyUtils.*;
 
 /**
  * 声明式事务管理
  */
-public class Example1
-{
+public class Example1 {
     // 模拟JDBC的Connection
-    public static class Connection
-    {
-        public void setAutoCommit(boolean flag)
-        {
+    public static class Connection {
+        public void setAutoCommit(boolean flag) {
             System.out.println("setAutoCommit(" + flag + ")");
         }
 
-        public void commit()
-        {
+        public void commit() {
             System.out.println("提交事务");
         }
 
-        public void rollback()
-        {
+        public void rollback() {
             System.out.println("回滚事务");
         }
 
-        public void close()
-        {
+        public void close() {
             System.out.println("关闭连接");
         }
 
-        public void execute(String sql)
-        {
+        public void execute(String sql) {
             System.out.println("执行sql语句：" + sql);
         }
     }
 
     // 模拟JDBC的DataSource
-    public static class DataSource
-    {
-        public Connection getConnection()
-        {
+    public static class DataSource {
+        public Connection getConnection() {
             System.out.println("获取连接");
             return new Connection();
         }
@@ -59,78 +50,64 @@ public class Example1
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     @Inherited
-    public @interface Transactional
-    {}
+    public @interface Transactional {
+    }
 
     // 模拟连接池
     private final Connection[] connectionPool = new Connection[1];
 
     // User服务接口
-    public interface UserService
-    {
+    public interface UserService {
         void insert();
+
         void delete();
     }
 
     // User服务实现类
-    public class UserServiceImpl implements UserService
-    {
+    public class UserServiceImpl implements UserService {
         @Override
         @Transactional
-        public void insert()
-        {
+        public void insert() {
             connectionPool[0].execute("INSERT INTO ...");
         }
 
         @Override
         @Transactional
-        public void delete()
-        {
+        public void delete() {
             connectionPool[0].execute("DELETE FROM ...");
             throw new RuntimeException("删除时抛出的异常");
         }
     }
 
     // 事务管理器
-    public class TransactionManager implements MethodInterceptor
-    {
+    public class TransactionManager implements MethodInterceptor {
         private final DataSource dataSource;
 
-        public TransactionManager(DataSource dataSource)
-        {
+        public TransactionManager(DataSource dataSource) {
             this.dataSource = dataSource;
         }
 
         @Override
-        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params)
-        {
-            try
-            {
+        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params) {
+            try {
                 connectionPool[0] = dataSource.getConnection();
                 connectionPool[0].setAutoCommit(false);
                 Object ret = targetMethod.invoke(params);
                 connectionPool[0].commit();
                 return ret;
-            }
-            catch (TargetMethodException e)
-            {
+            } catch (TargetMethodException e) {
                 System.out.println("发生异常：" + e.getMessage());
                 connectionPool[0].rollback();
                 return null;
-            }
-            finally
-            {
+            } finally {
                 connectionPool[0].close();
             }
         }
     }
 
     @Test
-    public void test()
-    {
-        UserService userService = proxy(
-                new UserServiceImpl(),
-                new TransactionManager(new DataSource()).when(hasAnnotation(Transactional.class)));
+    public void test() {
+        UserService userService = proxy(new UserServiceImpl(), new TransactionManager(new DataSource()).when(MethodMatcher.hasAnnotation(Transactional.class)));
 
         userService.insert();
         System.out.println();

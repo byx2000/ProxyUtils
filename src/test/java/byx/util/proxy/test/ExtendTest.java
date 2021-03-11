@@ -1,49 +1,44 @@
-package byx.aop.test;
+package byx.util.proxy.test;
 
-import byx.aop.exception.NotImplementedException;
+import byx.util.proxy.exception.NotImplementedException;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-import static byx.aop.AOP.*;
-import static byx.aop.core.MethodInterceptor.*;
+import static byx.util.proxy.ProxyUtils.*;
+import static byx.util.proxy.core.MethodInterceptor.*;
 
-public class ExtendTest
-{
-    public static abstract class User
-    {
+public class ExtendTest {
+    public static abstract class User {
         public abstract void setUsername(String username);
+
         public abstract String getUsername();
+
         public abstract void setPassword(String password);
+
         public abstract String getPassword();
     }
 
-    public static class Student
-    {
-        public int getId()
-        {
+    public static class Student {
+        public int getId() {
             return 1001;
         }
 
-        public String getName()
-        {
+        public String getName() {
             return "XiaoMing";
         }
     }
 
     @Test
-    public void test1()
-    {
-        User user = extend(User.class, delegateTo(new Object()
-        {
+    public void test1() {
+        User user = extend(User.class, delegateTo(new Object() {
             private String username;
 
-            public void setUsername(String username)
-            {
+            public void setUsername(String username) {
                 this.username = username;
             }
 
-            public String getUsername()
-            {
+            public String getUsername() {
                 return username;
             }
         }));
@@ -55,12 +50,9 @@ public class ExtendTest
     }
 
     @Test
-    public void test2()
-    {
-        Student student = extend(Student.class, delegateTo(new Object()
-        {
-            public int getId()
-            {
+    public void test2() {
+        Student student = extend(Student.class, delegateTo(new Object() {
+            public int getId() {
                 return 2002;
             }
         }));
