@@ -25,7 +25,7 @@ public interface MethodInterceptor {
      * @param interceptor 参数拦截器
      */
     static MethodInterceptor interceptParameters(ParametersInterceptor interceptor) {
-        return (signature, targetMethod, params) -> targetMethod.invoke(interceptor.intercept(signature, params));
+        return (signature, targetMethod, params) -> targetMethod.invoke(interceptor.intercept(params));
     }
 
     /**
@@ -34,7 +34,7 @@ public interface MethodInterceptor {
      * @param interceptor 返回值拦截器
      */
     static MethodInterceptor interceptReturnValue(ReturnValueInterceptor interceptor) {
-        return (signature, targetMethod, params) -> interceptor.intercept(signature, targetMethod.invoke(params));
+        return (signature, targetMethod, params) -> interceptor.intercept(targetMethod.invoke(params));
     }
 
     /**

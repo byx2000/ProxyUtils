@@ -149,7 +149,7 @@ public class MethodInterceptorTest {
     @Test
     public void testInterceptParameters() {
         boolean[] flag = new boolean[]{false};
-        ParametersInterceptor interceptor = (signature, params) -> {
+        ParametersInterceptor interceptor = params -> {
             flag[0] = true;
             assertEquals(params.length, 2);
             assertTrue(params[0] instanceof Integer);
@@ -168,7 +168,7 @@ public class MethodInterceptorTest {
     @Test
     public void testInterceptReturnValue() {
         boolean[] flag = new boolean[]{false};
-        ReturnValueInterceptor interceptor = (signature, returnValue) -> {
+        ReturnValueInterceptor interceptor = returnValue -> {
             flag[0] = true;
             assertTrue(returnValue instanceof Integer);
             assertEquals(123, returnValue);
