@@ -2,6 +2,7 @@ package byx.util.proxy.test;
 
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
+import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,7 +65,9 @@ public class Example5 {
     }
 
     // 方法拦截器
-    private final MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+    private final MethodInterceptor interceptor = targetMethod -> {
+        MethodSignature signature = targetMethod.getSignature();
+        Object[] params = targetMethod.getParams();
         Annotation[][] parameterAnnotations = signature.getParameterAnnotations();
         for (int i = 0; i < parameterAnnotations.length; ++i) {
             for (Annotation annotation : parameterAnnotations[i]) {

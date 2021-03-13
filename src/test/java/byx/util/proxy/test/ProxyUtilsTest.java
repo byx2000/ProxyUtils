@@ -1,9 +1,6 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.core.Invokable;
-import byx.util.proxy.core.MethodInterceptor;
-import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.MethodSignature;
+import byx.util.proxy.core.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -20,7 +17,9 @@ public class ProxyUtilsTest {
         }
 
         @Override
-        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params) {
+        public Object intercept(TargetMethod targetMethod) {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             System.out.println(name + ": 开始拦截" + signature.getName() + "方法");
             System.out.println(name + ": 原始参数：" + Arrays.toString(params));
             Object ret = targetMethod.invoke(params[0] + " " + name);
@@ -113,7 +112,9 @@ public class ProxyUtilsTest {
     @Test
     public void test6() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -133,7 +134,9 @@ public class ProxyUtilsTest {
     @Test
     public void test7() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -157,7 +160,9 @@ public class ProxyUtilsTest {
     @Test
     public void test8() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -181,7 +186,9 @@ public class ProxyUtilsTest {
     @Test
     public void test9() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -212,7 +219,9 @@ public class ProxyUtilsTest {
     @Test
     public void test10() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -243,7 +252,9 @@ public class ProxyUtilsTest {
     @Test
     public void test11() {
         final boolean[] flags = {false, false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flags[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);

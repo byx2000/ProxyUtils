@@ -39,8 +39,8 @@ public class ImplementTest {
 
     @Test
     public void test2() {
-        MethodInterceptor interceptor1 = (signature, targetMethod, params) -> 123;
-        MethodInterceptor interceptor2 = (signature, targetMethod, params) -> 456;
+        MethodInterceptor interceptor1 = targetMethod -> 123;
+        MethodInterceptor interceptor2 = targetMethod -> 456;
         MethodInterceptor interceptor = interceptor1.when(MethodMatcher.withName("add").or(MethodMatcher.withName("sub"))).then(interceptor2.when(MethodMatcher.withName("mul")));
         Calculator c = implement(Calculator.class, interceptor);
 

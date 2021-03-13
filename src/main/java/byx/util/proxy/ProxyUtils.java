@@ -3,6 +3,7 @@ package byx.util.proxy;
 import byx.util.proxy.core.Invokable;
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodSignature;
+import byx.util.proxy.core.TargetMethod;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.InvocationHandler;
 
@@ -49,7 +50,9 @@ public class ProxyUtils {
      * @return 动态生成的接口实现类
      */
     public static <T> T implement(Class<T> interfaceType, MethodInterceptor interceptor) {
-        return interfaceType.cast(Proxy.newProxyInstance(interfaceType.getClassLoader(), new Class<?>[]{interfaceType}, (proxy, method, args) -> interceptor.intercept(MethodSignature.of(method), Invokable.of(method, null), args)));
+        return interfaceType.cast(Proxy.newProxyInstance(interfaceType.getClassLoader(), new Class<?>[]{interfaceType}, (proxy, method, args) -> {
+            return interceptor.intercept(new TargetMethod(MethodSignature.of(method), Invokable.of(method, null), args));
+        }));
     }
 
     /**
@@ -63,7 +66,9 @@ public class ProxyUtils {
     public static <T> T extend(Class<T> parentType, MethodInterceptor interceptor) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(parentType);
-        enhancer.setCallback((InvocationHandler) (proxy, method, args) -> interceptor.intercept(MethodSignature.of(method), Invokable.of(method, null), args));
+        enhancer.setCallback((InvocationHandler) (proxy, method, args) -> {
+            return interceptor.intercept(new TargetMethod(MethodSignature.of(method), Invokable.of(method, null), args));
+        });
         return parentType.cast(enhancer.create());
     }
 
@@ -74,7 +79,7 @@ public class ProxyUtils {
     private static <T> T proxyByJdk(Object target, MethodInterceptor interceptor) {
         return (T) Proxy.newProxyInstance(target.getClass().getClassLoader(), target.getClass().getInterfaces(), (proxy, method, args) -> {
             Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-            return interceptor.intercept(MethodSignature.of(targetMethod), Invokable.of(targetMethod, target), args);
+            return interceptor.intercept(new TargetMethod(MethodSignature.of(targetMethod), Invokable.of(targetMethod, target), args));
         });
     }
 
@@ -85,7 +90,9 @@ public class ProxyUtils {
     private static <T> T proxyByCglib(Object target, MethodInterceptor interceptor) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(target.getClass());
-        enhancer.setCallback((InvocationHandler) (proxy, method, args) -> interceptor.intercept(MethodSignature.of(method), Invokable.of(method, target), args));
+        enhancer.setCallback((InvocationHandler) (proxy, method, args) -> {
+            return interceptor.intercept(new TargetMethod(MethodSignature.of(method), Invokable.of(method, target), args));
+        });
         return (T) enhancer.create();
     }
 

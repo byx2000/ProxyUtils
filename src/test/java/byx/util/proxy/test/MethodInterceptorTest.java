@@ -47,9 +47,9 @@ public class MethodInterceptorTest {
     @Test
     public void testInterceptor() {
         boolean[] flag = new boolean[]{false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
             flag[0] = true;
-            return targetMethod.invoke(params);
+            return targetMethod.invokeWithOriginalParams();
         };
         A a = proxy(new AImpl(), interceptor);
 
@@ -72,9 +72,9 @@ public class MethodInterceptorTest {
     @Test
     public void testWhen() {
         boolean[] flag = new boolean[]{false};
-        MethodInterceptor interceptor = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor = targetMethod -> {
             flag[0] = true;
-            return targetMethod.invoke(params);
+            return targetMethod.invokeWithOriginalParams();
         };
         MethodMatcher matcher = MethodMatcher.withName("f2");
         A a = proxy(new AImpl(), interceptor.when(matcher));
@@ -96,15 +96,15 @@ public class MethodInterceptorTest {
     @Test
     public void testThen() {
         String[] s = new String[]{""};
-        MethodInterceptor interceptor1 = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor1 = targetMethod -> {
             s[0] += "1b";
-            Object ret = targetMethod.invoke(params);
+            Object ret = targetMethod.invokeWithOriginalParams();
             s[0] += "1e";
             return ret;
         };
-        MethodInterceptor interceptor2 = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor2 = targetMethod -> {
             s[0] += "2b";
-            Object ret = targetMethod.invoke(params);
+            Object ret = targetMethod.invokeWithOriginalParams();
             s[0] += "2e";
             return ret;
         };
@@ -117,14 +117,14 @@ public class MethodInterceptorTest {
     @Test
     public void testWhenAndThen() {
         String[] s = new String[]{"", ""};
-        MethodInterceptor interceptor1 = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor1 = targetMethod -> {
             s[0] += "a";
-            return targetMethod.invoke(params);
+            return targetMethod.invokeWithOriginalParams();
         };
         MethodMatcher matcher1 = MethodMatcher.withName("f1");
-        MethodInterceptor interceptor2 = (signature, targetMethod, params) -> {
+        MethodInterceptor interceptor2 = targetMethod -> {
             s[1] += "b";
-            return targetMethod.invoke(params);
+            return targetMethod.invokeWithOriginalParams();
         };
         MethodMatcher matcher2 = MethodMatcher.withName("f3");
         A a = proxy(new AImpl(), interceptor1.when(matcher1).then(interceptor2.when(matcher2)));
@@ -253,7 +253,7 @@ public class MethodInterceptorTest {
                 return null;
             }
         };
-        A a2 = proxy(a1, (signature, targetMethod, params) -> targetMethod.invoke(params));
+        A a2 = proxy(a1, targetMethod -> targetMethod.invokeWithOriginalParams());
 
         assertThrows(TargetMethodException.class, () -> a2.f2(123, "hello"));
     }

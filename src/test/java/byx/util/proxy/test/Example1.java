@@ -1,10 +1,7 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.core.Invokable;
-import byx.util.proxy.core.MethodInterceptor;
-import byx.util.proxy.core.MethodSignature;
+import byx.util.proxy.core.*;
 import byx.util.proxy.exception.TargetMethodException;
-import byx.util.proxy.core.MethodMatcher;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
@@ -88,7 +85,8 @@ public class Example1 {
         }
 
         @Override
-        public Object intercept(MethodSignature signature, Invokable targetMethod, Object[] params) {
+        public Object intercept(TargetMethod targetMethod) {
+            Object[] params = targetMethod.getParams();
             try {
                 connectionPool[0] = dataSource.getConnection();
                 connectionPool[0].setAutoCommit(false);

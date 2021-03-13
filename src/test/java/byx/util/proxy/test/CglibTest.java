@@ -2,6 +2,7 @@ package byx.util.proxy.test;
 
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
+import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import static byx.util.proxy.ProxyUtils.proxy;
@@ -61,7 +62,9 @@ public class CglibTest {
         int[] id = new int[]{0};
         String[] name = new String[]{""};
         boolean[] flag = new boolean[]{false};
-        Student s = proxy(new Student(), (signature, targetMethod, params) -> {
+        Student s = proxy(new Student(), targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flag[0] = true;
             assertEquals(1, params.length);
             if (params[0] instanceof Integer) {
@@ -70,7 +73,7 @@ public class CglibTest {
                 name[0] = (String) params[0];
             }
             System.out.println("开始拦截" + signature.getName() + "方法");
-            Object ret = targetMethod.invoke(params);
+            Object ret = targetMethod.invokeWithOriginalParams();
             System.out.println("结束拦截" + signature.getName() + "方法");
             return ret;
         });
@@ -88,7 +91,9 @@ public class CglibTest {
     @Test
     public void test2() {
         boolean[] flag = new boolean[]{false};
-        Student s = proxy(new Student(), ((MethodInterceptor) (signature, targetMethod, params) -> {
+        Student s = proxy(new Student(), ((MethodInterceptor) targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flag[0] = true;
             assertEquals(1, params.length);
             assertEquals(1001, params[0]);
@@ -109,7 +114,9 @@ public class CglibTest {
     @Test
     public void test3() {
         boolean[] flag = new boolean[]{false};
-        Student s = proxy(new Student(), ((MethodInterceptor) (signature, targetMethod, params) -> {
+        Student s = proxy(new Student(), ((MethodInterceptor) targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flag[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
@@ -129,7 +136,9 @@ public class CglibTest {
     @Test
     public void test4() {
         boolean[] flag = new boolean[]{false};
-        User user = proxy(new UserImpl(), (signature, targetMethod, params) -> {
+        User user = proxy(new UserImpl(), targetMethod -> {
+            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getParams();
             flag[0] = true;
             System.out.println("开始拦截" + signature.getName() + "方法");
             Object ret = targetMethod.invoke(params);
