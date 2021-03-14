@@ -257,4 +257,11 @@ public class MethodInterceptorTest {
 
         assertThrows(TargetMethodException.class, () -> a2.f2(123, "hello"));
     }
+
+    @Test
+    public void testInvokeTargetMethod() {
+        A a = proxy(new AImpl(), invokeTargetMethod());
+        assertEquals(123, a.f2());
+        assertEquals("abc 100", a.f3(100, "abc"));
+    }
 }

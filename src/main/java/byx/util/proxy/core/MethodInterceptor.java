@@ -18,6 +18,17 @@ public interface MethodInterceptor {
     Object intercept(TargetMethod targetMethod);
 
     /**
+     * 执行目标方法
+     *
+     * @return 方法拦截器
+     */
+    static MethodInterceptor invokeTargetMethod() {
+        return targetMethod -> {
+            return targetMethod.invokeWithOriginalParams();
+        };
+    }
+
+    /**
      * 拦截参数
      *
      * @param interceptor 参数拦截器
