@@ -1,14 +1,12 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.core.MethodInterceptor;
-import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.ParametersInterceptor;
-import byx.util.proxy.core.ReturnValueInterceptor;
+import byx.util.proxy.core.*;
 import byx.util.proxy.exception.TargetMethodException;
 import org.junit.jupiter.api.Test;
 
 import static byx.util.proxy.ProxyUtils.proxy;
 import static byx.util.proxy.core.MethodInterceptor.*;
+import static byx.util.proxy.core.MethodMatcher.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MethodInterceptorTest {
@@ -263,5 +261,35 @@ public class MethodInterceptorTest {
         A a = proxy(new AImpl(), invokeTargetMethod());
         assertEquals(123, a.f2());
         assertEquals("abc 100", a.f3(100, "abc"));
+    }
+
+    public static class MyException1 extends Exception {
+    }
+
+    public static class MyException2 extends RuntimeException {
+    }
+
+    public static class B {
+        public int f1() throws Exception {
+            throw new MyException1();
+        }
+
+        public String f2() {
+            throw new MyException2();
+        }
+    }
+
+    @Test
+    public void testExceptionIntercept() throws Exception {
+        B b = proxy(new B(), interceptException(e -> {
+            assertTrue(e instanceof MyException1);
+            return 1001;
+        }).when(withName("f1")).then(interceptException(e -> {
+            assertTrue(e instanceof MyException2);
+            return "exception";
+        }).when(withName("f2"))));
+
+        assertEquals(1001, b.f1());
+        assertEquals("exception", b.f2());
     }
 }

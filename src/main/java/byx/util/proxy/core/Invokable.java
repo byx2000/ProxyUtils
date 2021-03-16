@@ -1,8 +1,10 @@
 package byx.util.proxy.core;
 
 import byx.util.proxy.exception.NotImplementedException;
+import byx.util.proxy.exception.ProxyUtilsException;
 import byx.util.proxy.exception.TargetMethodException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -33,10 +35,10 @@ public interface Invokable {
             try {
                 method.setAccessible(true);
                 return method.invoke(target, params);
-            }
-            // 目标对象方法抛出异常
-            catch (Exception e) {
-                throw new TargetMethodException(e, method);
+            } catch (InvocationTargetException e) {
+                throw new TargetMethodException(e.getTargetException(), method);
+            } catch (IllegalAccessException e) {
+                throw new ProxyUtilsException("Cannot invoke target method: " + method, e);
             }
         };
     }

@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 
 /**
  * 方法拦截器
+ *
+ * @author byx
  */
 public interface MethodInterceptor {
     /**
@@ -48,6 +50,21 @@ public interface MethodInterceptor {
     static MethodInterceptor interceptReturnValue(ReturnValueInterceptor interceptor) {
         return targetMethod -> {
             return interceptor.intercept(targetMethod.invokeWithOriginalParams());
+        };
+    }
+
+    /**
+     * 拦截异常
+     *
+     * @param interceptor 异常拦截器
+     */
+    static MethodInterceptor interceptException(ExceptionInterceptor interceptor) {
+        return targetMethod -> {
+            try {
+                return targetMethod.invokeWithOriginalParams();
+            } catch (TargetMethodException e) {
+                return interceptor.intercept(e.getTargetException());
+            }
         };
     }
 
