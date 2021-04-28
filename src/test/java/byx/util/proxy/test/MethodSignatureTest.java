@@ -4,6 +4,9 @@ import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +27,10 @@ public class MethodSignatureTest {
         @AnnotationOnMethod("hello")
         public boolean fun(int i, @AnnotationOnParam(123) Double d, String s) {
             return false;
+        }
+
+        public List<String> foo() {
+            return null;
         }
     }
 
@@ -55,6 +62,12 @@ public class MethodSignatureTest {
         assertEquals(0, parameterAnnotations[2].length);
         assertTrue(parameterAnnotations[1][0] instanceof AnnotationOnParam);
         assertEquals(123, ((AnnotationOnParam) parameterAnnotations[1][0]).value());
+
+        MethodSignature signature2 = MethodSignature.of(A.class.getMethod("foo"));
+        Type type = signature2.getGenericReturnType();
+        assertEquals(String.class, ((ParameterizedType) type).getActualTypeArguments()[0]);
+        type = signature.getGenericReturnType();
+        assertEquals(boolean.class, type);
 
         assertTrue(signature.isPublic());
         assertFalse(signature.isPrivate());

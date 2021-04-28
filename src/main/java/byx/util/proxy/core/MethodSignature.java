@@ -3,6 +3,7 @@ package byx.util.proxy.core;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 
 /**
  * 方法签名
@@ -17,6 +18,11 @@ public interface MethodSignature {
      * 获取返回值类型
      */
     Class<?> getReturnType();
+
+    /**
+     * 获取泛型返回类型
+     */
+    Type getGenericReturnType();
 
     /**
      * 获取参数类型
@@ -71,6 +77,11 @@ public interface MethodSignature {
             @Override
             public Class<?> getReturnType() {
                 return method.getReturnType();
+            }
+
+            @Override
+            public Type getGenericReturnType() {
+                return method.getGenericReturnType();
             }
 
             @Override
