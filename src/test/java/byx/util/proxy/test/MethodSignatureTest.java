@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.annotation.*;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,6 +69,12 @@ public class MethodSignatureTest {
         assertEquals(String.class, ((ParameterizedType) type).getActualTypeArguments()[0]);
         type = signature.getGenericReturnType();
         assertEquals(boolean.class, type);
+
+        String[] names = signature.getParameterNames();
+        assertTrue(Arrays.equals(new String[]{"i", "d", "s"}, names));
+
+        names = signature2.getParameterNames();
+        assertEquals(0, names.length);
 
         assertTrue(signature.isPublic());
         assertFalse(signature.isPrivate());

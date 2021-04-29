@@ -3,7 +3,10 @@ package byx.util.proxy.core;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * 方法签名
@@ -28,6 +31,11 @@ public interface MethodSignature {
      * 获取参数类型
      */
     Class<?>[] getParameterTypes();
+
+    /**
+     * 获取参数名
+     */
+    String[] getParameterNames();
 
     /**
      * 获取方法上的指定注解
@@ -87,6 +95,12 @@ public interface MethodSignature {
             @Override
             public Class<?>[] getParameterTypes() {
                 return method.getParameterTypes();
+            }
+
+            @Override
+            public String[] getParameterNames() {
+                Parameter[] parameters = method.getParameters();
+                return Arrays.stream(parameters).map(Parameter::getName).toArray(String[]::new);
             }
 
             @Override
