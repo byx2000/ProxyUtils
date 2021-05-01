@@ -1,5 +1,7 @@
 package byx.util.proxy.core;
 
+import java.lang.reflect.Method;
+
 /**
  * 目标方法
  */
@@ -65,5 +67,13 @@ public class TargetMethod {
      */
     public Object invoke(Object... params) {
         return invokable.invoke(params);
+    }
+
+    /**
+     * 获取Method对象
+     * @return Method对象
+     */
+    public Method getMethod() {
+        return signature.getMethod();
     }
 }
