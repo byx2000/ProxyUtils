@@ -4,6 +4,7 @@ import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -79,5 +80,7 @@ public class MethodSignatureTest {
         assertTrue(signature.isPublic());
         assertFalse(signature.isPrivate());
         assertFalse(signature.isProtected());
+
+        assertNotNull(signature.getMethod());
     }
 }

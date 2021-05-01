@@ -73,6 +73,11 @@ public interface MethodSignature {
     boolean isProtected();
 
     /**
+     * 获取方法对象
+     */
+    Method getMethod();
+
+    /**
      * 创建MethodSignature
      */
     static MethodSignature of(Method method) {
@@ -136,6 +141,11 @@ public interface MethodSignature {
             @Override
             public boolean isProtected() {
                 return Modifier.isProtected(method.getModifiers());
+            }
+
+            @Override
+            public Method getMethod() {
+                return method;
             }
         };
     }
