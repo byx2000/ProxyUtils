@@ -6,6 +6,7 @@ import byx.util.proxy.core.MethodSignature;
 import byx.util.proxy.core.TargetMethod;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.InvocationHandler;
+import org.burningwave.core.assembler.StaticComponentContainer;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -118,6 +119,7 @@ public class ProxyUtils {
     }
 
     static {
+        StaticComponentContainer.Modules.exportAllToAll();
         disableAccessWarnings();
     }
 }
