@@ -70,7 +70,9 @@ public interface MethodMatcher {
         Method[] methods = type.getDeclaredMethods();
         return signature -> {
             for (Method m : methods) {
-                if (m.getName().equals(signature.getName()) && m.getReturnType() == signature.getReturnType() && Arrays.equals(m.getParameterTypes(), signature.getParameterTypes())) {
+                if (m.getName().equals(signature.getName())
+                        && m.getReturnType() == signature.getReturnType()
+                        && Arrays.equals(m.getParameterTypes(), signature.getParameterTypes())) {
                     return true;
                 }
             }

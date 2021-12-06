@@ -25,9 +25,7 @@ public interface MethodInterceptor {
      * @return 方法拦截器
      */
     static MethodInterceptor invokeTargetMethod() {
-        return targetMethod -> {
-            return targetMethod.invokeWithOriginalParams();
-        };
+        return TargetMethod::invokeWithOriginalParams;
     }
 
     /**
@@ -48,9 +46,7 @@ public interface MethodInterceptor {
      * @param interceptor 返回值拦截器
      */
     static MethodInterceptor interceptReturnValue(ReturnValueInterceptor interceptor) {
-        return targetMethod -> {
-            return interceptor.intercept(targetMethod.invokeWithOriginalParams());
-        };
+        return targetMethod -> interceptor.intercept(targetMethod.invokeWithOriginalParams());
     }
 
     /**
@@ -115,10 +111,18 @@ public interface MethodInterceptor {
      * @param interceptor 方法拦截器
      */
     default MethodInterceptor then(MethodInterceptor interceptor) {
-        return targetMethod -> {
-            return interceptor.intercept(new TargetMethod(targetMethod.getSignature(), (Invokable) params -> {
-                return this.intercept(new TargetMethod(targetMethod.getSignature(), targetMethod.getInvokable(), params));
-            }, targetMethod.getParams()));
-        };
+        return targetMethod -> interceptor.intercept(
+                new TargetMethod(
+                        targetMethod.getSignature(),
+                        params -> this.intercept(
+                                new TargetMethod(
+                                        targetMethod.getSignature(),
+                                        targetMethod.getInvokable(),
+                                        params
+                                )
+                        ),
+                        targetMethod.getParams()
+                )
+        );
     }
 }
