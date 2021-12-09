@@ -1,6 +1,10 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.core.*;
+import byx.util.proxy.ProxyType;
+import byx.util.proxy.core.MethodInterceptor;
+import byx.util.proxy.core.MethodMatcher;
+import byx.util.proxy.core.MethodSignature;
+import byx.util.proxy.core.TargetMethod;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -280,5 +284,42 @@ public class ProxyUtilsTest {
         myClass.f1(123, "hello");
         assertFalse(flags[0]);
         assertFalse(flags[1]);
+    }
+
+    public interface A {
+        String f();
+    }
+
+    public static class A1 implements A {
+        @Override
+        public String f() {
+            return "A1";
+        }
+    }
+
+
+    public static class A2 implements A {
+        @Override
+        public String f() {
+            return "A2";
+        }
+    }
+
+    @Test
+    public void test12() {
+        A1 a1 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.BYTE_BUDDY);
+        assertEquals("A1", a1.f());
+        A2 a2 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.BYTE_BUDDY);
+        assertEquals("A2", a2.f());
+
+        A a11 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.JDK);
+        assertEquals("A1", a11.f());
+        A a22 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.JDK);
+        assertEquals("A2", a22.f());
+
+        A a111 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.AUTO);
+        assertEquals("A1", a111.f());
+        A a222 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.AUTO);
+        assertEquals("A2", a222.f());
     }
 }

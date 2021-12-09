@@ -24,6 +24,7 @@ import java.lang.reflect.Proxy;
 public class ProxyUtils {
     /**
      * 创建代理对象
+     * 自动选择代理方式
      *
      * @param target      目标对象
      * @param interceptor 方法拦截器
@@ -42,6 +43,27 @@ public class ProxyUtils {
         // 其他情况使用jdk代理
         else {
             return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
+        }
+    }
+
+    /**
+     * 创建代理对象
+     * 手动选择代理方式（JDK、ByteBuddy）
+     *
+     * @param target 目标对象
+     * @param interceptor 方法拦截器
+     * @param type 代理类型
+     * @param <T> 返回类型
+     * @return 被增强的代理对象
+     */
+    public static <T> T proxy(Object target, MethodInterceptor interceptor, ProxyType type) {
+        switch (type) {
+            case JDK:
+                return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
+            case BYTE_BUDDY:
+                return proxyByByteBuddy(target.getClass(), target, interceptor);
+            default:
+                return proxy(target, interceptor);
         }
     }
 
