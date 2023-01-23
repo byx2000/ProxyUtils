@@ -181,19 +181,14 @@ public class MethodInterceptorTest {
 
     @Test
     public void testDelegateToProxy() {
-        CharSequence s = proxy("hello", delegateTo(new Object() {
-            public int length() {
-                return 123;
-            }
-
-            public String toString() {
-                return "hi";
+        A a = proxy(new AImpl(), delegateTo(new Object() {
+            public String f3(int i, String s) {
+                return s + " " + i + "!";
             }
         }));
 
-        assertEquals(123, s.length());
-        assertEquals("hi", s.toString());
-        assertEquals('e', s.charAt(1));
+        assertEquals("hello 123!", a.f3(123, "hello"));
+        assertEquals(123, a.f2());
     }
 
     @Test
@@ -214,18 +209,18 @@ public class MethodInterceptorTest {
 
     @Test
     public void testException2() {
-        CharSequence s = proxy("hello", delegateTo(new Object() {
-            public int length() throws Exception {
+        A a = proxy(new AImpl(), delegateTo(new Object() {
+            public void f1() throws Exception {
                 throw new Exception("故意抛出的Exception");
             }
 
-            public String toString() {
+            public void f2(int i, String s) {
                 throw new RuntimeException("故意抛出的RuntimeException");
             }
         }));
 
-        assertThrows(TargetMethodException.class, s::length);
-        assertThrows(TargetMethodException.class, s::toString);
+        assertThrows(TargetMethodException.class, a::f1);
+        assertThrows(TargetMethodException.class, () -> a.f2(123, "hello"));
     }
 
     @Test
