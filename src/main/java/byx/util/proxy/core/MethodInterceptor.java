@@ -4,6 +4,7 @@ import byx.util.proxy.exception.TargetMethodException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 /**
  * 方法拦截器
@@ -25,41 +26,41 @@ public interface MethodInterceptor {
      * @return 方法拦截器
      */
     static MethodInterceptor invokeTargetMethod() {
-        return TargetMethod::invokeWithOriginalParams;
+        return TargetMethod::invokeWithOriginalArgs;
     }
 
     /**
      * 拦截参数
      *
-     * @param interceptor 参数拦截器
+     * @param argsMapper 参数转换器
      */
-    static MethodInterceptor interceptParameters(ParametersInterceptor interceptor) {
+    static MethodInterceptor interceptParameters(Function<Object[], Object[]> argsMapper) {
         return targetMethod -> {
-            Object[] params = targetMethod.getParams();
-            return targetMethod.invoke(interceptor.intercept(params));
+            Object[] params = targetMethod.getArgs();
+            return targetMethod.invoke(argsMapper.apply(params));
         };
     }
 
     /**
      * 拦截返回值
      *
-     * @param interceptor 返回值拦截器
+     * @param retValMapper 返回值转换器
      */
-    static MethodInterceptor interceptReturnValue(ReturnValueInterceptor interceptor) {
-        return targetMethod -> interceptor.intercept(targetMethod.invokeWithOriginalParams());
+    static MethodInterceptor interceptReturnValue(Function<Object, Object> retValMapper) {
+        return targetMethod -> retValMapper.apply(targetMethod.invokeWithOriginalArgs());
     }
 
     /**
      * 拦截异常
      *
-     * @param interceptor 异常拦截器
+     * @param exceptionMapper 异常转换器
      */
-    static MethodInterceptor interceptException(ExceptionInterceptor interceptor) {
+    static MethodInterceptor interceptException(Function<Throwable, Object> exceptionMapper) {
         return targetMethod -> {
             try {
-                return targetMethod.invokeWithOriginalParams();
+                return targetMethod.invokeWithOriginalArgs();
             } catch (TargetMethodException e) {
-                return interceptor.intercept(e.getTargetException());
+                return exceptionMapper.apply(e.getTargetException());
             }
         };
     }
@@ -71,17 +72,17 @@ public interface MethodInterceptor {
      */
     static MethodInterceptor delegateTo(Object proxy) {
         return targetMethod -> {
-            Object[] params = targetMethod.getParams();
-            MethodSignature signature = targetMethod.getSignature();
+            Object[] params = targetMethod.getArgs();
+            Method method = targetMethod.getMethod();
             Method m = null;
             try {
-                m = proxy.getClass().getDeclaredMethod(signature.getName(), signature.getParameterTypes());
+                m = proxy.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
                 m.setAccessible(true);
                 return m.invoke(proxy, params);
             }
             // 代理对象中没有该方法，则调用目标对象方法
             catch (NoSuchMethodException | IllegalAccessException e) {
-                return targetMethod.invokeWithOriginalParams();
+                return targetMethod.invokeWithOriginalArgs();
             }
             // 代理对象的方法抛出异常
             catch (InvocationTargetException e) {
@@ -97,11 +98,10 @@ public interface MethodInterceptor {
      */
     default MethodInterceptor when(MethodMatcher matcher) {
         return targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            if (matcher.match(signature)) {
+            if (matcher.match(targetMethod.getMethod())) {
                 return this.intercept(targetMethod);
             }
-            return targetMethod.invokeWithOriginalParams();
+            return targetMethod.invokeWithOriginalArgs();
         };
     }
 
@@ -113,15 +113,15 @@ public interface MethodInterceptor {
     default MethodInterceptor then(MethodInterceptor interceptor) {
         return targetMethod -> interceptor.intercept(
                 new TargetMethod(
-                        targetMethod.getSignature(),
-                        params -> this.intercept(
+                        targetMethod.getMethod(),
+                        args -> this.intercept(
                                 new TargetMethod(
-                                        targetMethod.getSignature(),
+                                        targetMethod.getMethod(),
                                         targetMethod.getInvokable(),
-                                        params
+                                        args
                                 )
                         ),
-                        targetMethod.getParams()
+                        targetMethod.getArgs()
                 )
         );
     }

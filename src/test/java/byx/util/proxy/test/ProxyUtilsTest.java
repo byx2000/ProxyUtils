@@ -1,15 +1,14 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.ProxyType;
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.MethodSignature;
 import byx.util.proxy.core.TargetMethod;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static byx.util.proxy.ProxyUtils.proxy;
+import static byx.util.proxy.ProxyUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProxyUtilsTest {
@@ -22,13 +21,13 @@ public class ProxyUtilsTest {
 
         @Override
         public Object intercept(TargetMethod targetMethod) {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
-            System.out.println(name + ": 开始拦截" + signature.getName() + "方法");
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
+            System.out.println(name + ": 开始拦截" + method.getName() + "方法");
             System.out.println(name + ": 原始参数：" + Arrays.toString(params));
             Object ret = targetMethod.invoke(params[0] + " " + name);
             System.out.println(name + ": 原始返回值：" + ret);
-            System.out.println(name + ": 结束拦截" + signature.getName() + "方法");
+            System.out.println(name + ": 结束拦截" + method.getName() + "方法");
             return ret + " " + name;
         }
     }
@@ -117,13 +116,13 @@ public class ProxyUtilsTest {
     public void test6() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
             assertNull(ret);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -139,13 +138,13 @@ public class ProxyUtilsTest {
     public void test7() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
             assertNull(ret);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -165,13 +164,13 @@ public class ProxyUtilsTest {
     public void test8() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
             assertEquals("0", ret);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -191,12 +190,12 @@ public class ProxyUtilsTest {
     public void test9() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -224,12 +223,12 @@ public class ProxyUtilsTest {
     public void test10() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -257,12 +256,12 @@ public class ProxyUtilsTest {
     public void test11() {
         final boolean[] flags = {false, false};
         MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flags[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             flags[1] = true;
             return ret;
         };
@@ -307,19 +306,19 @@ public class ProxyUtilsTest {
 
     @Test
     public void test12() {
-        A1 a1 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.BYTE_BUDDY);
+        A1 a1 = proxyByByteBuddy(new A1(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A1", a1.f());
-        A2 a2 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.BYTE_BUDDY);
+        A2 a2 = proxyByByteBuddy(new A2(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A2", a2.f());
 
-        A a11 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.JDK);
+        A a11 = proxyByJdk(new A1(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A1", a11.f());
-        A a22 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.JDK);
+        A a22 = proxyByJdk(new A2(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A2", a22.f());
 
-        A a111 = proxy(new A1(), MethodInterceptor.invokeTargetMethod(), ProxyType.AUTO);
+        A a111 = proxy(new A1(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A1", a111.f());
-        A a222 = proxy(new A2(), MethodInterceptor.invokeTargetMethod(), ProxyType.AUTO);
+        A a222 = proxy(new A2(), MethodInterceptor.invokeTargetMethod());
         assertEquals("A2", a222.f());
     }
 }

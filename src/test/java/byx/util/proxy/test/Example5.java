@@ -2,14 +2,14 @@ package byx.util.proxy.test;
 
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.lang.annotation.*;
+import java.lang.reflect.Method;
 
 import static byx.util.proxy.ProxyUtils.proxy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * 参数校验
@@ -66,9 +66,9 @@ public class Example5 {
 
     // 方法拦截器
     private final MethodInterceptor interceptor = targetMethod -> {
-        MethodSignature signature = targetMethod.getSignature();
-        Object[] params = targetMethod.getParams();
-        Annotation[][] parameterAnnotations = signature.getParameterAnnotations();
+        Method method = targetMethod.getMethod();
+        Object[] params = targetMethod.getArgs();
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         for (int i = 0; i < parameterAnnotations.length; ++i) {
             for (Annotation annotation : parameterAnnotations[i]) {
                 if (annotation instanceof NotNull) {

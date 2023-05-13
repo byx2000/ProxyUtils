@@ -2,7 +2,6 @@ package byx.util.proxy;
 
 import byx.util.proxy.core.Invokable;
 import byx.util.proxy.core.MethodInterceptor;
-import byx.util.proxy.core.MethodSignature;
 import byx.util.proxy.core.TargetMethod;
 import byx.util.proxy.exception.ProxyUtilsException;
 import net.bytebuddy.ByteBuddy;
@@ -28,10 +27,13 @@ public class ProxyUtils {
      *
      * @param target      目标对象
      * @param interceptor 方法拦截器
-     * @param <T>         返回类型
-     * @return 被增强的代理对象
+     * @return 代理对象
      */
     public static <T> T proxy(Object target, MethodInterceptor interceptor) {
+        if (target == null) {
+            throw new IllegalArgumentException("target cannot be null.");
+        }
+
         // final类使用jdk代理
         if (Modifier.isFinal(target.getClass().getModifiers())) {
             return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
@@ -43,27 +45,6 @@ public class ProxyUtils {
         // 其他情况使用jdk代理
         else {
             return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
-        }
-    }
-
-    /**
-     * 创建代理对象
-     * 手动选择代理方式（JDK、ByteBuddy）
-     *
-     * @param target 目标对象
-     * @param interceptor 方法拦截器
-     * @param type 代理类型
-     * @param <T> 返回类型
-     * @return 被增强的代理对象
-     */
-    public static <T> T proxy(Object target, MethodInterceptor interceptor, ProxyType type) {
-        switch (type) {
-            case JDK:
-                return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
-            case BYTE_BUDDY:
-                return proxyByByteBuddy(target.getClass(), target, interceptor);
-            default:
-                return proxy(target, interceptor);
         }
     }
 
@@ -92,8 +73,19 @@ public class ProxyUtils {
     }
 
     /**
-     * 使用jdk动态代理
+     * 使用jdk生成代理类
+     *
+     * @param target 目标对象
+     * @param interceptor 方法拦截器
+     * @return 代理对象
      */
+    public static <T> T proxyByJdk(Object target, MethodInterceptor interceptor) {
+        if (target == null) {
+            throw new IllegalArgumentException("target cannot be null.");
+        }
+        return proxyByJdk(target.getClass().getInterfaces(), target, interceptor);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> T proxyByJdk(Class<?>[] interfaceTypes, Object target, MethodInterceptor interceptor) {
         return (T) Proxy.newProxyInstance(
@@ -105,19 +97,24 @@ public class ProxyUtils {
                         targetMethod = target.getClass()
                                 .getMethod(method.getName(), method.getParameterTypes());
                     }
-                    return interceptor.intercept(
-                            new TargetMethod(
-                                    MethodSignature.of(targetMethod),
-                                    Invokable.of(targetMethod, target),
-                                    args
-                            )
-                    );
+                    return interceptor.intercept(new TargetMethod(targetMethod, Invokable.of(targetMethod, target), args));
                 });
     }
 
     /**
-     * 使用ByteBuddy动态代理
+     * 使用ByteBuddy生成代理类
+     *
+     * @param target 目标对象
+     * @param interceptor 方法拦截器
+     * @return 代理对象
      */
+    public static <T> T proxyByByteBuddy(Object target, MethodInterceptor interceptor) {
+        if (target == null) {
+            throw new IllegalArgumentException("target cannot be null.");
+        }
+        return proxyByByteBuddy(target.getClass(), target, interceptor);
+    }
+
     private static <T> T proxyByByteBuddy(Class<?> superclass, Object target, MethodInterceptor interceptor) {
         try {
             return (T) new ByteBuddy()
@@ -137,7 +134,7 @@ public class ProxyUtils {
     /**
      * ByteBuddy方法拦截器
      */
-    public static class ByteBuddyInterceptor {
+    protected static class ByteBuddyInterceptor {
         private final Object target;
         private final MethodInterceptor interceptor;
 
@@ -148,13 +145,7 @@ public class ProxyUtils {
 
         @RuntimeType
         public Object intercept(@Origin Method method, @AllArguments Object[] args) {
-            return interceptor.intercept(
-                    new TargetMethod(
-                            MethodSignature.of(method),
-                            Invokable.of(method, target),
-                            args
-                    )
-            );
+            return interceptor.intercept(new TargetMethod(method, Invokable.of(method, target), args));
         }
     }
 }

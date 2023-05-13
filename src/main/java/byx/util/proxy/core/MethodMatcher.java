@@ -12,10 +12,10 @@ public interface MethodMatcher {
     /**
      * 匹配
      *
-     * @param signature 方法签名
+     * @param method 方法对象
      * @return 是否匹配
      */
-    boolean match(MethodSignature signature);
+    boolean match(Method method);
 
     /**
      * 匹配所有方法
@@ -30,7 +30,7 @@ public interface MethodMatcher {
      * @param name 方法名
      */
     static MethodMatcher withName(String name) {
-        return signature -> name.equals(signature.getName());
+        return method -> name.equals(method.getName());
     }
 
     /**
@@ -40,7 +40,7 @@ public interface MethodMatcher {
      */
     static MethodMatcher withPattern(String regex) {
         Pattern pattern = Pattern.compile(regex);
-        return signature -> pattern.matcher(signature.getName()).matches();
+        return method -> pattern.matcher(method.getName()).matches();
     }
 
     /**
@@ -49,7 +49,7 @@ public interface MethodMatcher {
      * @param type 返回值类型
      */
     static MethodMatcher withReturnType(Class<?> type) {
-        return signature -> type.equals(signature.getReturnType());
+        return method -> type.equals(method.getReturnType());
     }
 
     /**
@@ -58,7 +58,7 @@ public interface MethodMatcher {
      * @param types 参数类型数组
      */
     static MethodMatcher withParameterTypes(Class<?>... types) {
-        return signature -> Arrays.equals(types, signature.getParameterTypes());
+        return method -> Arrays.equals(types, method.getParameterTypes());
     }
 
     /**
@@ -68,11 +68,11 @@ public interface MethodMatcher {
      */
     static MethodMatcher existInType(Class<?> type) {
         Method[] methods = type.getDeclaredMethods();
-        return signature -> {
+        return method -> {
             for (Method m : methods) {
-                if (m.getName().equals(signature.getName())
-                        && m.getReturnType() == signature.getReturnType()
-                        && Arrays.equals(m.getParameterTypes(), signature.getParameterTypes())) {
+                if (m.getName().equals(method.getName())
+                        && m.getReturnType() == method.getReturnType()
+                        && Arrays.equals(m.getParameterTypes(), method.getParameterTypes())) {
                     return true;
                 }
             }
@@ -86,7 +86,7 @@ public interface MethodMatcher {
      * @param annotationClass 注解类型
      */
     static <T extends Annotation> MethodMatcher hasAnnotation(Class<T> annotationClass) {
-        return signature -> signature.hasAnnotation(annotationClass);
+        return method -> method.isAnnotationPresent(annotationClass);
     }
 
     /**
@@ -95,7 +95,7 @@ public interface MethodMatcher {
      * @param matcher 另一个MethodMatcher
      */
     default MethodMatcher and(MethodMatcher matcher) {
-        return signature -> this.match(signature) && matcher.match(signature);
+        return method -> this.match(method) && matcher.match(method);
     }
 
     /**
@@ -104,14 +104,14 @@ public interface MethodMatcher {
      * @param matcher 另一个MethodMatcher
      */
     default MethodMatcher or(MethodMatcher matcher) {
-        return signature -> this.match(signature) || matcher.match(signature);
+        return method -> this.match(method) || matcher.match(method);
     }
 
     /**
      * 匹配不满足指定匹配结果的方法
      */
     default MethodMatcher not() {
-        return signature -> !this.match(signature);
+        return method -> !this.match(method);
     }
 
     /**

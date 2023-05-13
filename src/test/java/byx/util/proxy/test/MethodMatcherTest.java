@@ -1,19 +1,16 @@
 package byx.util.proxy.test;
 
-import byx.util.proxy.core.MethodSignature;
 import byx.util.proxy.core.MethodMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class MethodMatcherTest {
-    private MethodSignature getMethod(Class<?> type, String name, Class<?>... parameterTypes) {
+    private Method getMethod(Class<?> type, String name, Class<?>... parameterTypes) {
         try {
-            return MethodSignature.of(type.getMethod(name, parameterTypes));
+            return type.getMethod(name, parameterTypes);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

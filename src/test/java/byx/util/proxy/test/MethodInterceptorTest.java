@@ -4,6 +4,8 @@ import byx.util.proxy.core.*;
 import byx.util.proxy.exception.TargetMethodException;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Function;
+
 import static byx.util.proxy.ProxyUtils.proxy;
 import static byx.util.proxy.core.MethodInterceptor.*;
 import static byx.util.proxy.core.MethodMatcher.*;
@@ -47,7 +49,7 @@ public class MethodInterceptorTest {
         boolean[] flag = new boolean[]{false};
         MethodInterceptor interceptor = targetMethod -> {
             flag[0] = true;
-            return targetMethod.invokeWithOriginalParams();
+            return targetMethod.invokeWithOriginalArgs();
         };
         A a = proxy(new AImpl(), interceptor);
 
@@ -72,7 +74,7 @@ public class MethodInterceptorTest {
         boolean[] flag = new boolean[]{false};
         MethodInterceptor interceptor = targetMethod -> {
             flag[0] = true;
-            return targetMethod.invokeWithOriginalParams();
+            return targetMethod.invokeWithOriginalArgs();
         };
         MethodMatcher matcher = MethodMatcher.withName("f2");
         A a = proxy(new AImpl(), interceptor.when(matcher));
@@ -96,13 +98,13 @@ public class MethodInterceptorTest {
         String[] s = new String[]{""};
         MethodInterceptor interceptor1 = targetMethod -> {
             s[0] += "1b";
-            Object ret = targetMethod.invokeWithOriginalParams();
+            Object ret = targetMethod.invokeWithOriginalArgs();
             s[0] += "1e";
             return ret;
         };
         MethodInterceptor interceptor2 = targetMethod -> {
             s[0] += "2b";
-            Object ret = targetMethod.invokeWithOriginalParams();
+            Object ret = targetMethod.invokeWithOriginalArgs();
             s[0] += "2e";
             return ret;
         };
@@ -117,12 +119,12 @@ public class MethodInterceptorTest {
         String[] s = new String[]{"", ""};
         MethodInterceptor interceptor1 = targetMethod -> {
             s[0] += "a";
-            return targetMethod.invokeWithOriginalParams();
+            return targetMethod.invokeWithOriginalArgs();
         };
         MethodMatcher matcher1 = MethodMatcher.withName("f1");
         MethodInterceptor interceptor2 = targetMethod -> {
             s[1] += "b";
-            return targetMethod.invokeWithOriginalParams();
+            return targetMethod.invokeWithOriginalArgs();
         };
         MethodMatcher matcher2 = MethodMatcher.withName("f3");
         A a = proxy(new AImpl(), interceptor1.when(matcher1).then(interceptor2.when(matcher2)));
@@ -147,16 +149,16 @@ public class MethodInterceptorTest {
     @Test
     public void testInterceptParameters() {
         boolean[] flag = new boolean[]{false};
-        ParametersInterceptor interceptor = params -> {
+        Function<Object[], Object[]> argsMapper = args -> {
             flag[0] = true;
-            assertEquals(params.length, 2);
-            assertTrue(params[0] instanceof Integer);
-            assertTrue(params[1] instanceof String);
-            assertEquals(123, params[0]);
-            assertEquals("hi", params[1]);
+            assertEquals(args.length, 2);
+            assertTrue(args[0] instanceof Integer);
+            assertTrue(args[1] instanceof String);
+            assertEquals(123, args[0]);
+            assertEquals("hi", args[1]);
             return new Object[]{456, "abc"};
         };
-        A a = proxy(new AImpl(), interceptParameters(interceptor).when(MethodMatcher.withName("f3")));
+        A a = proxy(new AImpl(), interceptParameters(argsMapper).when(MethodMatcher.withName("f3")));
 
         String ret = a.f3(123, "hi");
         assertTrue(flag[0]);
@@ -166,13 +168,13 @@ public class MethodInterceptorTest {
     @Test
     public void testInterceptReturnValue() {
         boolean[] flag = new boolean[]{false};
-        ReturnValueInterceptor interceptor = returnValue -> {
+        Function<Object, Object> retValMapper = retVal -> {
             flag[0] = true;
-            assertTrue(returnValue instanceof Integer);
-            assertEquals(123, returnValue);
+            assertTrue(retVal instanceof Integer);
+            assertEquals(123, retVal);
             return 456;
         };
-        A a = proxy(new AImpl(), interceptReturnValue(interceptor).when(MethodMatcher.withName("f2").andReturnType(int.class)));
+        A a = proxy(new AImpl(), interceptReturnValue(retValMapper).when(MethodMatcher.withName("f2").andReturnType(int.class)));
 
         int ret = a.f2();
         assertTrue(flag[0]);
@@ -246,7 +248,7 @@ public class MethodInterceptorTest {
                 return null;
             }
         };
-        A a2 = proxy(a1, targetMethod -> targetMethod.invokeWithOriginalParams());
+        A a2 = proxy(a1, targetMethod -> targetMethod.invokeWithOriginalArgs());
 
         assertThrows(TargetMethodException.class, () -> a2.f2(123, "hello"));
     }

@@ -2,13 +2,14 @@ package byx.util.proxy.test;
 
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.MethodSignature;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
 
 import static byx.util.proxy.ProxyUtils.proxy;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CglibTest {
+public class ByteBuddyTest {
     public static class Student {
         private int id;
         private String name;
@@ -63,8 +64,8 @@ public class CglibTest {
         String[] name = new String[]{""};
         boolean[] flag = new boolean[]{false};
         Student s = proxy(new Student(), targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flag[0] = true;
             assertEquals(1, params.length);
             if (params[0] instanceof Integer) {
@@ -72,9 +73,9 @@ public class CglibTest {
             } else if (params[0] instanceof String) {
                 name[0] = (String) params[0];
             }
-            System.out.println("开始拦截" + signature.getName() + "方法");
-            Object ret = targetMethod.invokeWithOriginalParams();
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
+            Object ret = targetMethod.invokeWithOriginalArgs();
+            System.out.println("结束拦截" + method.getName() + "方法");
             return ret;
         });
 
@@ -92,14 +93,14 @@ public class CglibTest {
     public void test2() {
         boolean[] flag = new boolean[]{false};
         Student s = proxy(new Student(), ((MethodInterceptor) targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flag[0] = true;
             assertEquals(1, params.length);
             assertEquals(1001, params[0]);
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             return ret;
         }).when(MethodMatcher.withName("setId")));
 
@@ -115,13 +116,13 @@ public class CglibTest {
     public void test3() {
         boolean[] flag = new boolean[]{false};
         Student s = proxy(new Student(), ((MethodInterceptor) targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flag[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
             assertEquals("byx", ret);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             return "XiaoMing";
         }).when(MethodMatcher.withPattern("get(.*)").andReturnType(String.class)));
 
@@ -137,12 +138,12 @@ public class CglibTest {
     public void test4() {
         boolean[] flag = new boolean[]{false};
         User user = proxy(new UserImpl(), targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
+            Method method = targetMethod.getMethod();
+            Object[] params = targetMethod.getArgs();
             flag[0] = true;
-            System.out.println("开始拦截" + signature.getName() + "方法");
+            System.out.println("开始拦截" + method.getName() + "方法");
             Object ret = targetMethod.invoke(params);
-            System.out.println("结束拦截" + signature.getName() + "方法");
+            System.out.println("结束拦截" + method.getName() + "方法");
             return ret;
         });
 

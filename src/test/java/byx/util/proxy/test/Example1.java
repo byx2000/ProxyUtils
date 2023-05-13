@@ -103,7 +103,7 @@ public class Example1 {
         public Object intercept(TargetMethod targetMethod) {
             JdbcTemplate.startTransaction();
             try {
-                Object obj = targetMethod.invokeWithOriginalParams();
+                Object obj = targetMethod.invokeWithOriginalArgs();
                 JdbcTemplate.commitAndClose();
                 return obj;
             } catch (Exception e) {

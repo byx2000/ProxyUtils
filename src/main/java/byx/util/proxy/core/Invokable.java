@@ -14,10 +14,10 @@ public interface Invokable {
     /**
      * 调用方法
      *
-     * @param params 参数
+     * @param args 实参列表
      * @return 返回值
      */
-    Object invoke(Object... params);
+    Object invoke(Object... args);
 
     /**
      * 创建一个Invokable
@@ -26,7 +26,7 @@ public interface Invokable {
      * @param target 实例
      */
     static Invokable of(Method method, Object target) {
-        return params -> {
+        return args -> {
             // 目标对象为空
             // 这种情况发生在动态实现接口时
             if (target == null) {
@@ -34,7 +34,7 @@ public interface Invokable {
             }
             try {
                 method.setAccessible(true);
-                return method.invoke(target, params);
+                return method.invoke(target, args);
             } catch (InvocationTargetException e) {
                 throw new TargetMethodException(e.getTargetException(), method);
             } catch (IllegalAccessException e) {

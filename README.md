@@ -84,36 +84,37 @@ public class UserDaoImpl implements UserDao {
 import byx.util.proxy.ProxyUtils;
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.MethodMatcher;
-import byx.util.proxy.core.MethodSignature;
+
 import java.util.Arrays;
+
 import static byx.util.proxy.core.MethodMatcher.*;
 
 public class Main {
-    public static void main(String[] args) {
-        // 定义方法拦截器
-        MethodInterceptor interceptor = targetMethod -> {
-            MethodSignature signature = targetMethod.getSignature();
-            Object[] params = targetMethod.getParams();
-            System.out.println("开始拦截" + signature.getName() + "方法");
-            System.out.println("原始参数：" + Arrays.toString(params));
-            Object ret = targetMethod.invoke(params);
-            System.out.println("原始返回值：" + ret);
-            System.out.println("结束拦截" + signature.getName() + "方法");
-            return ret;
-        };
+   public static void main(String[] args) {
+      // 定义方法拦截器
+      MethodInterceptor interceptor = targetMethod -> {
+         MethodSignature signature = targetMethod.getSignature();
+         Object[] params = targetMethod.getArgs();
+         System.out.println("开始拦截" + signature.getName() + "方法");
+         System.out.println("原始参数：" + Arrays.toString(params));
+         Object ret = targetMethod.invoke(params);
+         System.out.println("原始返回值：" + ret);
+         System.out.println("结束拦截" + signature.getName() + "方法");
+         return ret;
+      };
 
-        // 定义方法匹配器：匹配所有方法名以list开头且返回值为int类型的方法
-        MethodMatcher matcher = withPattern("list(.*)").andReturnType(int.class);
+      // 定义方法匹配器：匹配所有方法名以list开头且返回值为int类型的方法
+      MethodMatcher matcher = withPattern("list(.*)").andReturnType(int.class);
 
-        // 创建AOP代理对象
-        UserDao userDao = ProxyUtils.proxy(new UserDaoImpl(), interceptor.when(matcher));
+      // 创建AOP代理对象
+      UserDao userDao = ProxyUtils.proxy(new UserDaoImpl(), interceptor.when(matcher));
 
-        userDao.listAll();
-        System.out.println();
-        userDao.listById(1001);
-        System.out.println();
-        userDao.deleteByName("XiaoMing");
-    }
+      userDao.listAll();
+      System.out.println();
+      userDao.listById(1001);
+      System.out.println();
+      userDao.deleteByName("XiaoMing");
+   }
 }
 ```
 

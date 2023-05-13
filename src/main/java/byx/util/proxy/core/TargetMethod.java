@@ -6,30 +6,21 @@ import java.lang.reflect.Method;
  * 目标方法
  */
 public class TargetMethod {
-    private final MethodSignature signature;
+    private final Method method;
     private final Invokable invokable;
-    private final Object[] params;
+    private final Object[] args;
 
     /**
      * 创建目标方法
      *
-     * @param signature 方法签名
+     * @param method 方法对象
      * @param invokable 调用器
-     * @param params    原始参数
+     * @param args    实参列表
      */
-    public TargetMethod(MethodSignature signature, Invokable invokable, Object[] params) {
-        this.signature = signature;
+    public TargetMethod(Method method, Invokable invokable, Object[] args) {
+        this.method = method;
         this.invokable = invokable;
-        this.params = params;
-    }
-
-    /**
-     * 获取方法签名
-     *
-     * @return 方法签名
-     */
-    public MethodSignature getSignature() {
-        return signature;
+        this.args = args;
     }
 
     /**
@@ -42,12 +33,12 @@ public class TargetMethod {
     }
 
     /**
-     * 获取原始参数
+     * 获取实参列表
      *
-     * @return 原始参数数组
+     * @return 实参列表
      */
-    public Object[] getParams() {
-        return params;
+    public Object[] getArgs() {
+        return args;
     }
 
     /**
@@ -55,18 +46,18 @@ public class TargetMethod {
      *
      * @return 返回值
      */
-    public Object invokeWithOriginalParams() {
-        return invokable.invoke(params);
+    public Object invokeWithOriginalArgs() {
+        return invokable.invoke(args);
     }
 
     /**
      * 使用特定参数调用原始方法
      *
-     * @param params 参数
+     * @param args 参数
      * @return 返回值
      */
-    public Object invoke(Object... params) {
-        return invokable.invoke(params);
+    public Object invoke(Object... args) {
+        return invokable.invoke(args);
     }
 
     /**
@@ -74,6 +65,6 @@ public class TargetMethod {
      * @return Method对象
      */
     public Method getMethod() {
-        return signature.getMethod();
+        return method;
     }
 }
