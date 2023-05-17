@@ -158,7 +158,7 @@ public class MethodInterceptorTest {
             assertEquals("hi", args[1]);
             return new Object[]{456, "abc"};
         };
-        A a = proxy(new AImpl(), interceptParameters(argsMapper).when(MethodMatcher.withName("f3")));
+        A a = proxy(new AImpl(), interceptArgs(argsMapper).when(MethodMatcher.withName("f3")));
 
         String ret = a.f3(123, "hi");
         assertTrue(flag[0]);

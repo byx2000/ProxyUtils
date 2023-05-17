@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
  *
  * @author byx
  */
-public class TargetMethodException extends ProxyUtilsException {
+public class TargetMethodException extends ProxyException {
     private final Throwable targetException;
 
     public TargetMethodException(Throwable e, Method method) {

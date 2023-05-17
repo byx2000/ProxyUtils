@@ -3,7 +3,7 @@ package byx.util.proxy;
 import byx.util.proxy.core.Invokable;
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.TargetMethod;
-import byx.util.proxy.exception.ProxyUtilsException;
+import byx.util.proxy.exception.ProxyException;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
@@ -127,7 +127,7 @@ public class ProxyUtils {
                     .getConstructor()
                     .newInstance();
         } catch (Exception e) {
-            throw new ProxyUtilsException("Cannot proxy by ByteBuddy: " + e);
+            throw new ProxyException("Cannot proxy by ByteBuddy: " + e);
         }
     }
 

@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
  *
  * @author byx
  */
-public class NotImplementedException extends ProxyUtilsException {
+public class NotImplementedException extends ProxyException {
     public NotImplementedException(Method method) {
         super("Not implemented method: " + method);
     }

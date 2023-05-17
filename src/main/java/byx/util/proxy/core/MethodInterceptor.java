@@ -8,22 +8,18 @@ import java.util.function.Function;
 
 /**
  * 方法拦截器
- *
- * @author byx
  */
 public interface MethodInterceptor {
     /**
      * 拦截
      *
      * @param targetMethod 目标方法
-     * @return 返回值
+     * @return 方法返回值
      */
     Object intercept(TargetMethod targetMethod);
 
     /**
      * 执行目标方法
-     *
-     * @return 方法拦截器
      */
     static MethodInterceptor invokeTargetMethod() {
         return TargetMethod::invokeWithOriginalArgs;
@@ -34,10 +30,10 @@ public interface MethodInterceptor {
      *
      * @param argsMapper 参数转换器
      */
-    static MethodInterceptor interceptParameters(Function<Object[], Object[]> argsMapper) {
+    static MethodInterceptor interceptArgs(Function<Object[], Object[]> argsMapper) {
         return targetMethod -> {
-            Object[] params = targetMethod.getArgs();
-            return targetMethod.invoke(argsMapper.apply(params));
+            Object[] args = targetMethod.getArgs();
+            return targetMethod.invoke(argsMapper.apply(args));
         };
     }
 
@@ -66,21 +62,21 @@ public interface MethodInterceptor {
     }
 
     /**
-     * 将目标类的部分方法委托到代理类
+     * 如果proxy中存在与目标方法名称和参数列表相同的方法，则将目标方法转发到proxy中，否则调用原目标方法
      *
      * @param proxy 代理类
      */
     static MethodInterceptor delegateTo(Object proxy) {
         return targetMethod -> {
-            Object[] params = targetMethod.getArgs();
+            Object[] args = targetMethod.getArgs();
             Method method = targetMethod.getMethod();
             Method m = null;
             try {
                 m = proxy.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
                 m.setAccessible(true);
-                return m.invoke(proxy, params);
+                return m.invoke(proxy, args);
             }
-            // 代理对象中没有该方法，则调用目标对象方法
+            // 代理对象中没有该方法，则调用目标方法
             catch (NoSuchMethodException | IllegalAccessException e) {
                 return targetMethod.invokeWithOriginalArgs();
             }
@@ -92,7 +88,7 @@ public interface MethodInterceptor {
     }
 
     /**
-     * 指定拦截条件
+     * 当方法满足指定拦截条件时才启用方法拦截器
      *
      * @param matcher 方法匹配器
      */

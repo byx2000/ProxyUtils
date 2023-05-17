@@ -3,20 +3,13 @@ package byx.util.proxy.core;
 import java.lang.reflect.Method;
 
 /**
- * 目标方法
+ * 封装目标方法
  */
 public class TargetMethod {
     private final Method method;
     private final Invokable invokable;
     private final Object[] args;
 
-    /**
-     * 创建目标方法
-     *
-     * @param method 方法对象
-     * @param invokable 调用器
-     * @param args    实参列表
-     */
     public TargetMethod(Method method, Invokable invokable, Object[] args) {
         this.method = method;
         this.invokable = invokable;
