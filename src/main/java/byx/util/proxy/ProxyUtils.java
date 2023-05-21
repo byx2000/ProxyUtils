@@ -1,6 +1,5 @@
 package byx.util.proxy;
 
-import byx.util.proxy.core.Invokable;
 import byx.util.proxy.core.MethodInterceptor;
 import byx.util.proxy.core.TargetMethod;
 import byx.util.proxy.exception.ProxyException;
@@ -97,7 +96,7 @@ public class ProxyUtils {
                         targetMethod = target.getClass()
                                 .getMethod(method.getName(), method.getParameterTypes());
                     }
-                    return interceptor.intercept(new TargetMethod(targetMethod, Invokable.of(targetMethod, target), args));
+                    return interceptor.intercept(new TargetMethod(targetMethod, args, target));
                 });
     }
 
@@ -145,7 +144,7 @@ public class ProxyUtils {
 
         @RuntimeType
         public Object intercept(@Origin Method method, @AllArguments Object[] args) {
-            return interceptor.intercept(new TargetMethod(method, Invokable.of(method, target), args));
+            return interceptor.intercept(new TargetMethod(method, args, target));
         }
     }
 }

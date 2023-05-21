@@ -1,19 +1,29 @@
 package byx.util.proxy.core;
 
+import byx.util.proxy.exception.NotImplementedException;
+import byx.util.proxy.exception.ProxyException;
+import byx.util.proxy.exception.TargetMethodException;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 /**
  * 封装目标方法
  */
 public class TargetMethod {
     private final Method method;
-    private final Invokable invokable;
     private final Object[] args;
+    private final Function<Object[], Object> invokable;
 
-    public TargetMethod(Method method, Invokable invokable, Object[] args) {
+    public TargetMethod(Method method, Object[] args, Object target) {
+        this(method, args, createInvokable(method, target));
+    }
+
+    public TargetMethod(Method method, Object[] args, Function<Object[], Object> invokable) {
         this.method = method;
-        this.invokable = invokable;
         this.args = args;
+        this.invokable = invokable;
     }
 
     /**
@@ -21,7 +31,7 @@ public class TargetMethod {
      *
      * @return 调用器
      */
-    public Invokable getInvokable() {
+    public Function<Object[], Object> getInvokable() {
         return invokable;
     }
 
@@ -40,7 +50,7 @@ public class TargetMethod {
      * @return 返回值
      */
     public Object invokeWithOriginalArgs() {
-        return invokable.invoke(args);
+        return invokable.apply(args);
     }
 
     /**
@@ -50,7 +60,7 @@ public class TargetMethod {
      * @return 返回值
      */
     public Object invoke(Object... args) {
-        return invokable.invoke(args);
+        return invokable.apply(args);
     }
 
     /**
@@ -59,5 +69,24 @@ public class TargetMethod {
      */
     public Method getMethod() {
         return method;
+    }
+
+    // 封装目标方法的调用逻辑
+    private static Function<Object[], Object> createInvokable(Method method, Object target) {
+        return args -> {
+            // 目标对象为空
+            // 这种情况发生在动态实现接口时
+            if (target == null) {
+                throw new NotImplementedException(method);
+            }
+            try {
+                method.setAccessible(true);
+                return method.invoke(target, args);
+            } catch (InvocationTargetException e) {
+                throw new TargetMethodException(e.getTargetException(), method);
+            } catch (IllegalAccessException e) {
+                throw new ProxyException("Cannot invoke target method: " + method, e);
+            }
+        };
     }
 }

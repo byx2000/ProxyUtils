@@ -110,14 +110,12 @@ public interface MethodInterceptor {
         return targetMethod -> interceptor.intercept(
                 new TargetMethod(
                         targetMethod.getMethod(),
-                        args -> this.intercept(
+                        targetMethod.getArgs(), args -> this.intercept(
                                 new TargetMethod(
                                         targetMethod.getMethod(),
-                                        targetMethod.getInvokable(),
-                                        args
+                                        args, targetMethod.getInvokable()
                                 )
-                        ),
-                        targetMethod.getArgs()
+                        )
                 )
         );
     }
